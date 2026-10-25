@@ -1,7 +1,5 @@
 # IndVault
 
-# VAULTNOTES
-
 A pitch-black, zero-dependency minimalist vault & notes workspace built for speed, privacy, biometric security, and free real-time multi-device cloud sync.
 
 [](https://sizumaru21-collab.github.io/IndVault/)
