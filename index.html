@@ -1,0 +1,2695 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <link rel="manifest" href="manifest.json">
+  <title>VAULTNOTES — Pitch-Black Minimalist Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            black: '#000000',
+            surface: {
+              DEFAULT: '#09090b',
+              card: '#121214',
+              hover: '#18181b',
+              elevated: '#1f1f23',
+            },
+            zinc: {
+              950: '#09090b',
+              900: '#121214',
+              850: '#18181b',
+              800: '#27272a',
+              700: '#3f3f46',
+              600: '#52525b',
+              500: '#71717a',
+              400: '#a1a1aa',
+              300: '#d4d4d8',
+              200: '#e4e4e7',
+              100: '#f4f4f5',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+
+    /* Biometric Animations */
+    @keyframes pulseRing {
+      0% {
+        transform: scale(0.85);
+        opacity: 0.8;
+      }
+      50% {
+        transform: scale(1.25);
+        opacity: 0.15;
+      }
+      100% {
+        transform: scale(1.4);
+        opacity: 0;
+      }
+    }
+
+    @keyframes scanBeam {
+      0% {
+        top: 8%;
+        opacity: 0.3;
+      }
+      50% {
+        top: 85%;
+        opacity: 0.9;
+      }
+      100% {
+        top: 8%;
+        opacity: 0.3;
+      }
+    }
+
+    @keyframes shakeKeypad {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    .animate-pulse-ring-1 {
+      animation: pulseRing 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+    }
+    .animate-pulse-ring-2 {
+      animation: pulseRing 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite 0.7s;
+    }
+    .animate-scan-beam {
+      animation: scanBeam 1.8s ease-in-out infinite;
+    }
+    .shake-animation {
+      animation: shakeKeypad 0.4s ease-in-out;
+    }
+
+    /* Touch & Focus styles */
+    button:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 2px solid #52525b;
+      outline-offset: 1px;
+    }
+    
+    /* Code block styling in editor */
+    pre code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+  <!-- Firebase App & Firestore Compat SDKs (Free Tier Real-Time Sync) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-black text-zinc-100 font-sans antialiased selection:bg-zinc-800 selection:text-white min-h-screen flex flex-col overflow-x-hidden">
+
+  <!-- TOP HEADER NAVIGATION BAR -->
+  <header class="sticky top-0 z-30 bg-black/90 backdrop-blur-md border-b border-zinc-850 px-4 sm:px-6 py-3 transition-colors">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      
+      <!-- Brand & Status -->
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white font-bold text-base shadow-inner">
+          <svg class="w-4 h-4 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-semibold text-sm tracking-tight text-white">VAULTNOTES</h1>
+            <span class="text-[10px] uppercase font-mono tracking-widest px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">Zinc Edition</span>
+          </div>
+          <p class="text-xs text-zinc-500 hidden sm:block">Minimalist Pitch-Black Workspace</p>
+        </div>
+      </div>
+
+      <!-- Center: Layout View Switcher -->
+      <div class="inline-flex items-center p-1 rounded-lg bg-zinc-900/90 border border-zinc-800 text-xs">
+        <button id="viewBtnGrid" type="button" class="layout-toggle-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-md font-medium transition-all text-white bg-zinc-800 shadow-sm" title="Google Keep Grid View">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+          </svg>
+          <span class="hidden md:inline">Keep Grid</span>
+        </button>
+        <button id="viewBtnList" type="button" class="layout-toggle-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-md font-medium transition-all text-zinc-400 hover:text-zinc-200" title="Clean Stream List View">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+          <span class="hidden md:inline">Clean List</span>
+        </button>
+        <button id="viewBtnSplit" type="button" class="layout-toggle-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-md font-medium transition-all text-zinc-400 hover:text-zinc-200" title="Apple Notes Split Pane">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 4H5a2 2 0 00-2 2v12a2 2 0 002 2h4m0-16v16m0-16h10a2 2 0 012 2v12a2 2 0 01-2 2H9"></path>
+          </svg>
+          <span class="hidden md:inline">Apple Split</span>
+        </button>
+      </div>
+
+      <!-- Right Header Actions -->
+      <div class="flex items-center gap-2">
+        <!-- Audio Mute Toggle -->
+        <button id="toggleAudioBtn" type="button" class="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition" title="Toggle Synthesized Haptics & Sound">
+          <svg id="iconAudioOn" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+          </svg>
+          <svg id="iconAudioOff" class="w-4 h-4 hidden text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path>
+          </svg>
+        </button>
+
+        <!-- PWA Install Guide Button -->
+        <button id="openPwaBtn" type="button" class="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition" title="PWA Installation Guide">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+        </button>
+
+        <!-- Settings Button -->
+        <button id="openSettingsBtn" type="button" class="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition" title="Settings & Security">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+        </button>
+
+                <!-- Live Cloud Sync Status Pill -->
+        <button id="headerSyncBtn" type="button" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 transition text-xs font-mono" title="Cloud Sync Status (Click to configure)">
+          <span id="headerSyncDot" class="w-2 h-2 rounded-full bg-zinc-600 transition-colors"></span>
+          <span id="headerSyncText" class="text-[11px]">Local Only</span>
+        </button>
+
+<!-- Lock Application Button -->
+        <button id="lockAppBtn" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 hover:bg-zinc-850 transition text-xs font-medium" title="Lock Workspace">
+          <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+          </svg>
+          <span class="hidden sm:inline">Lock</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER (BLURS WHEN LOCKED) -->
+  <main id="appMainContent" class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 transition-all duration-300">
+    
+    <!-- SEARCH & FILTER BAR -->
+    <section class="mb-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <!-- Search Input -->
+      <div class="relative flex-1 max-w-xl">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input id="searchInput" type="text" placeholder="Search notes by title, content, or tag..." class="w-full bg-zinc-900/80 border border-zinc-800 rounded-xl pl-10 pr-10 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:bg-zinc-900 transition-colors">
+        <button id="clearSearchBtn" type="button" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 p-1" title="Clear search">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Tag Filter Chips & Note Count -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none text-xs">
+        <button type="button" data-tag="all" class="tag-filter-chip px-3 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-white font-medium transition">All</button>
+        <button type="button" data-tag="pinned" class="tag-filter-chip px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 transition">Pinned</button>
+        <button type="button" data-tag="Work" class="tag-filter-chip px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 transition">Work</button>
+        <button type="button" data-tag="Ideas" class="tag-filter-chip px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 transition">Ideas</button>
+        <button type="button" data-tag="Todos" class="tag-filter-chip px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 transition">Todos</button>
+        <button type="button" data-tag="Personal" class="tag-filter-chip px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 transition">Personal</button>
+      </div>
+    </section>
+
+    <!-- QUICK COMPOSER (GOOGLE KEEP STYLE EXPANDABLE BAR) -->
+    <section id="composerSection" class="max-w-2xl mx-auto mb-8 transition-all">
+      <div id="composerCard" class="bg-zinc-900 border border-zinc-800 hover:border-zinc-700/80 rounded-2xl shadow-xl transition-all duration-200 overflow-hidden">
+        
+        <!-- Collapsed Bar -->
+        <div id="composerCollapsed" class="flex items-center justify-between px-4 py-3 cursor-text">
+          <span class="text-sm text-zinc-500 font-normal">Write a note...</span>
+          <div class="flex items-center gap-2 text-zinc-500">
+            <button id="quickPinToggle" type="button" class="p-1.5 hover:text-zinc-200 hover:bg-zinc-800 rounded-lg transition" title="Toggle Pin">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+              </svg>
+            </button>
+            <span class="text-xs font-mono text-zinc-600 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-850 hidden sm:inline">⌘N</span>
+          </div>
+        </div>
+
+        <!-- Expanded Form -->
+        <form id="composerExpandedForm" class="hidden p-4 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <input id="composerTitle" type="text" placeholder="Title" class="w-full bg-transparent text-base font-semibold text-white placeholder-zinc-500 border-none focus:outline-none focus:ring-0">
+            <button id="composerPinBtn" type="button" class="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition" title="Pin Note">
+              <svg id="composerPinIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+              </svg>
+            </button>
+          </div>
+
+          <textarea id="composerBody" rows="3" placeholder="Take a note..." class="w-full bg-transparent text-sm text-zinc-200 placeholder-zinc-500 resize-none border-none focus:outline-none focus:ring-0 leading-relaxed"></textarea>
+
+          <div class="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-800/80">
+            <!-- Tag selector -->
+            <div class="flex items-center gap-2">
+              <label for="composerTag" class="text-xs text-zinc-500">Tag:</label>
+              <select id="composerTag" class="bg-zinc-950 text-xs text-zinc-300 border border-zinc-800 rounded-lg px-2.5 py-1 focus:border-zinc-700 focus:outline-none">
+                <option value="General">General</option>
+                <option value="Work">Work</option>
+                <option value="Ideas">Ideas</option>
+                <option value="Todos">Todos</option>
+                <option value="Personal">Personal</option>
+              </select>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex items-center gap-2">
+              <button id="composerCancelBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition">Cancel</button>
+              <button id="composerSaveBtn" type="submit" class="px-4 py-1.5 rounded-lg text-xs font-medium bg-white text-black hover:bg-zinc-200 transition shadow-sm">Save Note</button>
+            </div>
+          </div>
+        </form>
+
+      </div>
+    </section>
+
+    <!-- CONTENT VIEWS WRAPPER -->
+    <div id="viewsContainer" class="relative">
+
+      <!-- VIEW 1: KEEP GRID VIEW -->
+      <section id="layoutKeepGrid" class="layout-view">
+        <div id="gridPinnedSection" class="hidden mb-6">
+          <div class="flex items-center gap-2 mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <svg class="w-3.5 h-3.5 text-zinc-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path>
+            </svg>
+            <span>Pinned</span>
+          </div>
+          <div id="pinnedGridNotes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+
+        <div id="gridOthersSection">
+          <div id="gridOthersLabel" class="hidden items-center gap-2 mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <span>Others</span>
+          </div>
+          <div id="otherGridNotes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: CLEAN LIST VIEW -->
+      <section id="layoutCleanList" class="layout-view hidden">
+        <div class="max-w-4xl mx-auto space-y-2.5" id="cleanListContainer"></div>
+      </section>
+
+      <!-- VIEW 3: APPLE NOTES SPLIT PANE VIEW -->
+      <section id="layoutAppleNotes" class="layout-view hidden">
+        <div class="h-[calc(100vh-190px)] min-h-[500px] border border-zinc-800 rounded-2xl overflow-hidden bg-black flex flex-col md:flex-row shadow-2xl">
+          
+          <!-- Left Sidebar: Note List -->
+          <div id="splitSidebar" class="w-full md:w-80 md:min-w-[280px] md:max-w-[360px] border-b md:border-b-0 md:border-r border-zinc-800 bg-zinc-950 flex flex-col">
+            <!-- Sidebar Header -->
+            <div class="p-3 border-b border-zinc-850 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">All Notes</span>
+                <span id="splitNoteCountBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">0</span>
+              </div>
+              <button id="splitNewNoteBtn" type="button" class="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition" title="Create New Note in Split Pane">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Sidebar Scrollable List -->
+            <div id="splitSidebarNotes" class="flex-1 overflow-y-auto divide-y divide-zinc-900/60 p-2 space-y-1"></div>
+          </div>
+
+          <!-- Right Pane: Active Note Live Editor -->
+          <div id="splitEditorPane" class="flex-1 flex flex-col bg-zinc-950/40">
+            <!-- Mobile back button to sidebar -->
+            <div class="md:hidden p-2 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/50">
+              <button id="splitMobileBackBtn" type="button" class="text-xs flex items-center gap-1 text-zinc-400 hover:text-white">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                <span>Notes List</span>
+              </button>
+              <span id="splitMobileTitlePreview" class="text-xs text-zinc-400 truncate max-w-[200px]">Note Editor</span>
+            </div>
+
+            <!-- Editor Toolbar -->
+            <div class="px-5 py-3 border-b border-zinc-850 flex items-center justify-between gap-3 text-xs">
+              <div class="flex items-center gap-2">
+                <span id="splitSaveStatus" class="flex items-center gap-1.5 text-zinc-500 font-mono text-[11px]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500/80"></span>
+                  <span>Synced</span>
+                </span>
+                <span class="text-zinc-700">•</span>
+                <span id="splitWordCount" class="text-zinc-500 text-[11px]">0 words</span>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <!-- Tag selector in editor -->
+                <select id="splitEditorTag" class="bg-zinc-900 text-xs text-zinc-300 border border-zinc-800 rounded-lg px-2 py-1 focus:border-zinc-700 focus:outline-none">
+                  <option value="General">General</option>
+                  <option value="Work">Work</option>
+                  <option value="Ideas">Ideas</option>
+                  <option value="Todos">Todos</option>
+                  <option value="Personal">Personal</option>
+                </select>
+
+                <!-- Pin in editor -->
+                <button id="splitEditorPinBtn" type="button" class="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition" title="Toggle Pin">
+                  <svg id="splitEditorPinIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                  </svg>
+                </button>
+
+                <!-- Export MD -->
+                <button id="splitEditorExportBtn" type="button" class="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition" title="Download Markdown">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                  </svg>
+                </button>
+
+                <!-- Delete in editor -->
+                <button id="splitEditorDeleteBtn" type="button" class="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-rose-400 transition" title="Delete Note">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Active Note Inputs (Real-Time Text Binding) -->
+            <div class="flex-1 flex flex-col p-5 overflow-y-auto">
+              <input id="splitEditorTitle" type="text" placeholder="Title..." class="w-full bg-transparent text-xl font-bold text-white placeholder-zinc-600 border-none focus:outline-none focus:ring-0 mb-3 tracking-tight">
+              <div class="text-[11px] font-mono text-zinc-600 mb-4 flex items-center gap-2">
+                <span id="splitEditorTimestamp">Last updated: Just now</span>
+              </div>
+              <textarea id="splitEditorBody" placeholder="Start typing your note here... (Markdown supported)" class="w-full flex-1 bg-transparent text-sm text-zinc-200 placeholder-zinc-600 border-none focus:outline-none focus:ring-0 resize-none leading-relaxed font-sans"></textarea>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- EMPTY STATE (WHEN NO NOTES FOUND) -->
+      <div id="emptyNotesState" class="hidden py-16 text-center">
+        <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+        </div>
+        <h3 class="text-sm font-medium text-zinc-300">No notes found</h3>
+        <p class="text-xs text-zinc-500 mt-1 max-w-xs mx-auto">Try a different search query or create a new note to get started.</p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- EDIT NOTE MODAL (FOR GRID & LIST IN-PLACE EDITING) -->
+  <div id="editNoteModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-2xl w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono uppercase tracking-wider text-zinc-400">Edit Note</span>
+          <span id="modalTimestamp" class="text-[11px] text-zinc-500"></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="modalPinBtn" type="button" class="p-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-white transition" title="Toggle Pin">
+            <svg id="modalPinIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+            </svg>
+          </button>
+          <button id="modalCloseXBtn" type="button" class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <input id="modalTitleInput" type="text" placeholder="Title" class="w-full bg-transparent text-lg font-bold text-white placeholder-zinc-500 border-none focus:outline-none focus:ring-0">
+        <textarea id="modalBodyInput" rows="8" placeholder="Note content..." class="w-full bg-transparent text-sm text-zinc-200 placeholder-zinc-500 border-none focus:outline-none focus:ring-0 leading-relaxed resize-none"></textarea>
+      </div>
+
+      <div class="pt-3 border-t border-zinc-800 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <label for="modalTagSelect" class="text-xs text-zinc-500">Tag:</label>
+          <select id="modalTagSelect" class="bg-zinc-950 text-xs text-zinc-300 border border-zinc-800 rounded-lg px-2.5 py-1 focus:border-zinc-700 focus:outline-none">
+            <option value="General">General</option>
+            <option value="Work">Work</option>
+            <option value="Ideas">Ideas</option>
+            <option value="Todos">Todos</option>
+            <option value="Personal">Personal</option>
+          </select>
+          <span id="modalCharCount" class="text-[11px] font-mono text-zinc-600 ml-2">0 chars</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="modalDuplicateBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-950 border border-zinc-800 text-zinc-300 hover:text-white transition">Duplicate</button>
+          <button id="modalExportBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-950 border border-zinc-800 text-zinc-300 hover:text-white transition">Export .md</button>
+          <button id="modalDeleteBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 transition">Delete</button>
+          <button id="modalSaveBtn" type="button" class="px-4 py-1.5 rounded-lg text-xs font-medium bg-white text-black hover:bg-zinc-200 transition">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BIOMETRIC & PASSCODE PHONE MOCKUP UNLOCK MODAL -->
+  <div id="lockModalOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/90 backdrop-blur-xl">
+    
+    <!-- Phone Mockup Container -->
+    <div class="relative w-full max-w-[340px] sm:max-w-[360px] bg-black border-4 border-zinc-800 rounded-[44px] shadow-[0_0_80px_rgba(0,0,0,0.9)] p-4 sm:p-5 flex flex-col items-center justify-between min-h-[580px] overflow-hidden">
+      
+      <!-- Speaker Notch / Dynamic Island Mockup -->
+      <div class="w-24 h-4 bg-zinc-900 border border-zinc-800/80 rounded-full flex items-center justify-center gap-2 mb-2">
+        <div class="w-2 h-2 rounded-full bg-zinc-950 border border-zinc-800"></div>
+        <div class="w-2.5 h-1.5 rounded-full bg-zinc-950"></div>
+      </div>
+
+      <!-- Phone Status Bar -->
+      <div class="w-full flex items-center justify-between text-[11px] font-mono text-zinc-400 px-2 mb-2">
+        <span id="lockStatusTime">09:41</span>
+        <div class="flex items-center gap-1.5">
+          <!-- Cellular Signal 4 bars -->
+          <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="2" y="16" width="3" height="6" rx="0.5" />
+            <rect x="7" y="12" width="3" height="10" rx="0.5" />
+            <rect x="12" y="8" width="3" height="14" rx="0.5" />
+            <rect x="17" y="4" width="3" height="18" rx="0.5" />
+          </svg>
+          <!-- Wifi 3 arcs -->
+          <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4zm0 3.5c3.78 0 7.21 1.5 9.72 3.96L12 18.5 2.28 11.46C4.79 9 8.22 7.5 12 7.5z"/>
+          </svg>
+          <!-- Battery icon -->
+          <div class="flex items-center gap-0.5">
+            <div class="w-5 h-2.5 border border-zinc-400 rounded-sm p-0.5 flex items-center">
+              <div class="h-full w-3.5 bg-zinc-400 rounded-xs"></div>
+            </div>
+            <div class="w-0.5 h-1 bg-zinc-400 rounded-r-xs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lock Header & Live Digital Clock -->
+      <div class="text-center my-2">
+        <div id="lockIconContainer" class="w-8 h-8 mx-auto mb-2 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 transition-all">
+          <svg id="lockPadlockIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+          </svg>
+        </div>
+        <div id="lockBigClock" class="text-3xl sm:text-4xl font-extralight tracking-tight text-white font-mono">09:41:00</div>
+        <div id="lockBigDate" class="text-[11px] uppercase tracking-wider text-zinc-500 font-medium mt-1">Sunday, October 18</div>
+      </div>
+
+      <!-- VIEW TOGGLE: BIOMETRIC vs PASSCODE -->
+      <div class="w-full flex p-1 rounded-xl bg-zinc-900/80 border border-zinc-800 my-2 text-xs">
+        <button id="lockTabBiometric" type="button" class="flex-1 py-1.5 rounded-lg font-medium transition text-white bg-zinc-800">Biometric</button>
+        <button id="lockTabPasscode" type="button" class="flex-1 py-1.5 rounded-lg font-medium transition text-zinc-400 hover:text-zinc-200">Passcode</button>
+      </div>
+
+      <!-- PANE 1: OPTICAL FINGERPRINT SCANNER -->
+      <div id="paneBiometric" class="w-full flex-1 flex flex-col items-center justify-center py-4">
+        
+        <div class="relative w-28 h-28 flex items-center justify-center my-auto">
+          <!-- Concentric animated guide pulse rings -->
+          <div class="absolute inset-0 rounded-full border border-zinc-700 animate-pulse-ring-1 pointer-events-none"></div>
+          <div class="absolute inset-0 rounded-full border border-emerald-500/30 animate-pulse-ring-2 pointer-events-none"></div>
+
+          <!-- Sensor Hotspot Button -->
+          <button id="fingerprintSensorBtn" type="button" class="relative z-10 w-24 h-24 rounded-full bg-zinc-900 border-2 border-zinc-700 hover:border-emerald-500/80 flex items-center justify-center text-zinc-400 hover:text-emerald-400 transition-all duration-300 shadow-[0_0_25px_rgba(0,0,0,0.8)] overflow-hidden active:scale-95 group" title="Hold or Tap to Scan Fingerprint">
+            
+            <!-- Scanning Light Beam -->
+            <div id="scannerBeam" class="absolute w-full h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent blur-[1px] animate-scan-beam pointer-events-none"></div>
+            
+            <!-- Fingerprint SVG Icon -->
+            <svg id="fingerprintSvg" class="w-12 h-12 transition-transform group-hover:scale-105" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
+              <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
+              <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
+              <path d="M2 12a10 10 0 0 1 18-6"/>
+              <path d="M2 16h.01"/>
+              <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
+              <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/>
+              <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
+              <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
+            </svg>
+
+            <!-- Success Checkmark (hidden until verified) -->
+            <svg id="fingerprintSuccessCheck" class="w-12 h-12 text-emerald-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+            </svg>
+
+          </button>
+        </div>
+
+        <p id="sensorStatusText" class="text-xs text-zinc-400 font-medium text-center mt-3">Touch sensor or tap to authenticate</p>
+        
+        <!-- Platform WebAuthn Hardware Biometrics Button (if supported) -->
+        <button id="btnHardwareBiometrics" type="button" class="mt-3 flex items-center gap-1.5 text-[11px] text-zinc-500 hover:text-zinc-300 font-mono transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+          </svg>
+          <span>Use Platform Touch ID / Face ID</span>
+        </button>
+      </div>
+
+      <!-- PANE 2: PASSCODE KEYPAD FALLBACK -->
+      <div id="panePasscode" class="w-full flex-1 flex flex-col items-center justify-center hidden py-1">
+        
+        <!-- PIN Dots (4 digits) -->
+        <div id="pinDotsRow" class="flex items-center gap-3.5 my-3">
+          <div class="pin-dot w-3.5 h-3.5 rounded-full border border-zinc-700 bg-transparent transition-all duration-200"></div>
+          <div class="pin-dot w-3.5 h-3.5 rounded-full border border-zinc-700 bg-transparent transition-all duration-200"></div>
+          <div class="pin-dot w-3.5 h-3.5 rounded-full border border-zinc-700 bg-transparent transition-all duration-200"></div>
+          <div class="pin-dot w-3.5 h-3.5 rounded-full border border-zinc-700 bg-transparent transition-all duration-200"></div>
+        </div>
+
+        <p id="passcodeHelperText" class="text-[11px] text-zinc-500 mb-2">Default PIN: <span class="font-mono text-zinc-300">1234</span></p>
+
+        <!-- Numeric Keypad Grid -->
+        <div class="grid grid-cols-3 gap-2.5 w-full max-w-[240px]">
+          <button type="button" class="num-key w-14 h-14 mx-auto rounded-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-lg font-medium text-white hover:bg-zinc-850 active:scale-95 transition flex items-center justify-center" data-val="1">1</button>
+          <button type="button" class="num-key w-14 h-14 mx-auto rounded-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-lg font-medium text-white hover:bg-zinc-850 active:scale-95 transition flex items-center justify-center" data-val="2">2</button>
+          <button type="button" class="num-key w-14 h-14 mx-auto rounded-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-lg font-medium text-white hover:bg-zinc-850 active:scale-95 transition flex items-center justify-center" data-val="3">3</button>
+          
+          <button type="button" class="num-key w-14 h-14 mx-auto rounded-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-lg font-medium text-white hover:bg-zinc-850 active:scale-95 transition flex items-center justify-center" data-val="4">4</button>
+          <button type="button" class="num-key w-14 h-14 mx-auto rounded-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-lg font-medium text-white hover:bg-zinc-850 active:scale-95 transition flex items-center justify-center" data-val="5">5</button>
+          <button type="button" class="num-key w-14 h-14 mx-auto rounded-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-lg font-medium text-white hover:bg-zinc-850 active:scale-95 transition flex items-center justify-center" data-val="6">6</button>
+          
+          <button type="button" class="num-key w-14 h-14 mx-auto rounded-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-lg font-medium text-white hover:bg-zinc-850 active:scale-95 transition flex items-center justify-center" data-val="7">7</button>
+          <button type="button" class="num-key w-14 h-14 mx-auto rounded-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-lg font-medium text-white hover:bg-zinc-850 active:scale-95 transition flex items-center justify-center" data-val="8">8</button>
+          <button type="button" class="num-key w-14 h-14 mx-auto rounded-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-lg font-medium text-white hover:bg-zinc-850 active:scale-95 transition flex items-center justify-center" data-val="9">9</button>
+          
+          <button type="button" class="num-key-clear w-14 h-14 mx-auto rounded-full text-xs font-medium text-zinc-500 hover:text-white transition flex items-center justify-center" title="Clear All">Clear</button>
+          <button type="button" class="num-key w-14 h-14 mx-auto rounded-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-lg font-medium text-white hover:bg-zinc-850 active:scale-95 transition flex items-center justify-center" data-val="0">0</button>
+          <button type="button" class="num-key-backspace w-14 h-14 mx-auto rounded-full text-zinc-500 hover:text-white transition flex items-center justify-center" title="Backspace">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414-6.414a2 2 0 011.414-.586H19a2 2 0 012 2v10a2 2 0 01-2 2h-7.172a2 2 0 01-1.414-.586L3 12z"></path>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Phone Home Indicator Bar -->
+      <div class="w-32 h-1 bg-zinc-800 rounded-full mt-2"></div>
+
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settingsModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span class="text-sm font-semibold text-white">Settings & Security</span>
+        </div>
+        <button id="settingsCloseXBtn" type="button" class="p-1 rounded-lg text-zinc-400 hover:text-white transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        
+        <!-- Change Passcode -->
+        <div class="p-3 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2">
+          <span class="font-medium text-zinc-200 block">Change Unlock Passcode</span>
+          <div class="flex items-center gap-2">
+            <input id="inputNewPin" type="password" maxlength="4" placeholder="New 4-digit PIN" class="bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100 font-mono tracking-widest w-36 focus:border-zinc-700 focus:outline-none">
+            <button id="btnSaveNewPin" type="button" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-medium transition">Update PIN</button>
+          </div>
+          <p id="pinChangeFeedback" class="text-[11px] text-zinc-500">Current PIN is stored safely in your browser.</p>
+        </div>
+
+        <!-- Audio Synthesis & Feedback -->
+        <div class="flex items-center justify-between p-3 rounded-xl bg-zinc-950 border border-zinc-800">
+          <div>
+            <span class="font-medium text-zinc-200 block">Synthesized Audio Haptics</span>
+            <span class="text-[11px] text-zinc-500">Zero-dependency Web Audio oscillator ticks</span>
+          </div>
+          <button id="btnToggleSoundSetting" type="button" class="px-3 py-1.5 bg-zinc-800 text-white rounded-lg font-medium transition">Enabled</button>
+        </div>
+
+                <!-- Cloud Sync & Multi-Device Real-Time Sync -->
+        <div class="p-3.5 rounded-xl bg-zinc-950 border border-zinc-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span id="syncModalStatusDot" class="w-2 h-2 rounded-full bg-zinc-600"></span>
+              <span class="font-medium text-zinc-200 block text-xs">Real-Time Cloud Sync (Phone & Laptop)</span>
+            </div>
+            <span id="syncModalStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">Offline / Local</span>
+          </div>
+
+          <p class="text-[11px] text-zinc-400 leading-relaxed">
+            Sync your notes in real time across phone and laptop for free forever via your private Google Firebase Firestore.
+          </p>
+
+          <div class="space-y-2">
+            <div>
+              <label for="inputSyncVaultId" class="text-[11px] text-zinc-400 font-medium block mb-1">1. Secret Vault Passphrase (Enter same on both devices):</label>
+              <input id="inputSyncVaultId" type="text" placeholder="e.g. my-private-vault-2026" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100 font-mono focus:border-zinc-700 focus:outline-none">
+            </div>
+
+            <div>
+              <label for="textareaFirebaseConfig" class="text-[11px] text-zinc-400 font-medium block mb-1">2. Firebase Config (Paste from Firebase Console):</label>
+              <textarea id="textareaFirebaseConfig" rows="3" placeholder='Paste your firebaseConfig object or JSON here...' class="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2 text-[11px] text-zinc-200 font-mono resize-none focus:border-zinc-700 focus:outline-none"></textarea>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+              <button id="btnConnectSync" type="button" class="px-3 py-1.5 bg-white text-black hover:bg-zinc-200 rounded-lg font-medium text-xs transition">Connect & Sync</button>
+              <button id="btnManualSyncNow" type="button" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white rounded-lg font-medium text-xs transition">Sync Now</button>
+              <button id="btnDisconnectSync" type="button" class="px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-rose-400 hover:bg-rose-950/30 rounded-lg font-medium text-xs transition">Disconnect</button>
+            </div>
+            <p id="syncFeedbackText" class="text-[10px] text-zinc-500 font-mono"></p>
+          </div>
+        </div>
+
+<!-- Data Backup & Restore -->
+        <div class="p-3 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2">
+          <span class="font-medium text-zinc-200 block">Backup & Offline Storage</span>
+          <div class="flex items-center gap-2">
+            <button id="btnExportAllJson" type="button" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-medium transition">Export JSON</button>
+            <button id="btnImportJsonTrigger" type="button" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-medium transition">Import JSON</button>
+            <input id="fileInputImportJson" type="file" accept=".json" class="hidden">
+          </div>
+        </div>
+
+        <!-- Reset Sample Notes -->
+        <div class="flex items-center justify-between p-3 rounded-xl bg-zinc-950 border border-zinc-800">
+          <div>
+            <span class="font-medium text-zinc-200 block">Sample Data</span>
+            <span class="text-[11px] text-zinc-500">Restore initial curated notes</span>
+          </div>
+          <button id="btnResetSampleData" type="button" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg font-medium transition">Reset</button>
+        </div>
+
+      </div>
+
+      <div class="pt-3 border-t border-zinc-800 flex justify-end">
+        <button id="settingsDoneBtn" type="button" class="px-4 py-1.5 rounded-lg text-xs font-medium bg-white text-black hover:bg-zinc-200 transition">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PWA INSTALLATION DIALOG MODAL -->
+  <div id="pwaModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+            <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <span class="text-sm font-semibold text-white">Add Notes to Home Screen</span>
+        </div>
+        <button id="pwaCloseXBtn" type="button" class="p-1 rounded-lg text-zinc-400 hover:text-white transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Native Install Button if event is caught -->
+      <div id="pwaNativeInstallArea" class="hidden">
+        <button id="btnNativePwaInstall" type="button" class="w-full py-2.5 bg-white hover:bg-zinc-200 text-black rounded-xl font-medium text-xs transition flex items-center justify-center gap-2 shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+          <span>Install Notes App Now</span>
+        </button>
+        <div class="relative flex py-2 items-center">
+          <div class="flex-grow border-t border-zinc-800"></div>
+          <span class="flex-shrink mx-2 text-[10px] text-zinc-600 uppercase font-mono">or manual instructions</span>
+          <div class="flex-grow border-t border-zinc-800"></div>
+        </div>
+      </div>
+
+      <!-- iOS vs Android Tabs -->
+      <div class="flex p-1 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
+        <button id="pwaTabIos" type="button" class="flex-1 py-1.5 rounded-lg font-medium transition text-white bg-zinc-850">iOS Safari</button>
+        <button id="pwaTabAndroid" type="button" class="flex-1 py-1.5 rounded-lg font-medium transition text-zinc-400 hover:text-zinc-200">Android Chrome</button>
+      </div>
+
+      <!-- iOS Instructions -->
+      <div id="pwaPaneIos" class="space-y-3 text-xs text-zinc-300">
+        <div class="flex items-start gap-3 p-2.5 rounded-xl bg-zinc-950 border border-zinc-800/80">
+          <span class="w-5 h-5 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[11px] font-mono font-bold text-white shrink-0">1</span>
+          <p>Tap the <strong class="text-white">Share</strong> button in Safari's bottom toolbar (<svg class="inline w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>).</p>
+        </div>
+        <div class="flex items-start gap-3 p-2.5 rounded-xl bg-zinc-950 border border-zinc-800/80">
+          <span class="w-5 h-5 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[11px] font-mono font-bold text-white shrink-0">2</span>
+          <p>Scroll down and select <strong class="text-white">"Add to Home Screen"</strong>.</p>
+        </div>
+        <div class="flex items-start gap-3 p-2.5 rounded-xl bg-zinc-950 border border-zinc-800/80">
+          <span class="w-5 h-5 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[11px] font-mono font-bold text-white shrink-0">3</span>
+          <p>Tap <strong class="text-white">Add</strong> in the top-right corner to launch Notes as a standalone full-screen pitch-black app.</p>
+        </div>
+      </div>
+
+      <!-- Android Instructions -->
+      <div id="pwaPaneAndroid" class="space-y-3 text-xs text-zinc-300 hidden">
+        <div class="flex items-start gap-3 p-2.5 rounded-xl bg-zinc-950 border border-zinc-800/80">
+          <span class="w-5 h-5 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[11px] font-mono font-bold text-white shrink-0">1</span>
+          <p>Tap the <strong class="text-white">Three Dots</strong> menu (⋮) in Chrome's top right corner.</p>
+        </div>
+        <div class="flex items-start gap-3 p-2.5 rounded-xl bg-zinc-950 border border-zinc-800/80">
+          <span class="w-5 h-5 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[11px] font-mono font-bold text-white shrink-0">2</span>
+          <p>Tap <strong class="text-white">"Install app"</strong> or <strong class="text-white">"Add to Home screen"</strong>.</p>
+        </div>
+        <div class="flex items-start gap-3 p-2.5 rounded-xl bg-zinc-950 border border-zinc-800/80">
+          <span class="w-5 h-5 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-[11px] font-mono font-bold text-white shrink-0">3</span>
+          <p>Confirm the prompt. Notes will install offline with zero network latency.</p>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-zinc-800 flex justify-end">
+        <button id="pwaDoneBtn" type="button" class="px-4 py-1.5 rounded-lg text-xs font-medium bg-zinc-800 text-white hover:bg-zinc-700 transition">Got It</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- VANILLA JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    (function() {
+      'use strict';
+
+      // --- SAMPLE DEFAULT NOTES ---
+      const DEFAULT_NOTES = [
+        {
+          id: 'note_1',
+          title: 'Architecture Review & Zero-Trust Security',
+          body: 'Offline-first zero-dependency client notes architecture. Pitch-black zinc palette (#09090b / #121214). In-screen biometric optical scanning simulator paired with cryptographic WebAuthn hardware credentials and 4-digit PIN fallback.',
+          tag: 'Work',
+          pinned: true,
+          updatedAt: Date.now() - 1000 * 60 * 35
+        },
+        {
+          id: 'note_2',
+          title: 'Minimalist Design Manifesto',
+          body: 'Dieter Rams: "Good design is as little design as possible." True pitch-black (#000000) and deep zinc (#121214) surfaces allow content to breathe. Eliminate gratuitous shadows, saturated gradients, and noisy widgets.',
+          tag: 'Ideas',
+          pinned: true,
+          updatedAt: Date.now() - 1000 * 60 * 180
+        },
+        {
+          id: 'note_3',
+          title: 'Sprint Deliverables & Todos',
+          body: '- [x] Web Audio API oscillator synthesis (140Hz -> 70Hz tick)\n- [x] Apple Notes split dual pane with real-time text binding\n- [x] Responsive Keep grid masonry and clean stream\n- [x] LocalStorage persistence layer\n- [ ] Deploy PWA service worker manifest',
+          tag: 'Todos',
+          pinned: false,
+          updatedAt: Date.now() - 1000 * 60 * 420
+        },
+        {
+          id: 'note_4',
+          title: 'Web Audio API UI Sound Frequencies',
+          body: 'Keypress tick: 140 Hz exponentially decaying to 70 Hz across 35ms.\nSuccess unlock: Two-tone chord at 587.33 Hz (D5) and 880 Hz (A5).\nError buzz: 110 Hz square oscillator double burst for invalid passcode.',
+          tag: 'Personal',
+          pinned: false,
+          updatedAt: Date.now() - 1000 * 60 * 1440
+        },
+        {
+          id: 'note_5',
+          title: 'Books & Papers to Read Q4',
+          body: '1. Designing Data-Intensive Applications (Kleppmann)\n2. The Design of Everyday Things (Norman)\n3. Clean Code & Architecture principles for offline PWAs.',
+          tag: 'Personal',
+          pinned: false,
+          updatedAt: Date.now() - 1000 * 60 * 2880
+        }
+      ];
+
+      // --- APPLICATION STATE ---
+      let notes = [];
+      let activeLayout = 'keep-grid'; // 'keep-grid' | 'clean-list' | 'apple-notes'
+      let activeFilterTag = 'all';
+      let searchQuery = '';
+      let isLocked = true; // starts locked for authentic phone unlock experience
+      let pinCode = '1234';
+      let currentEnteredPin = '';
+      let soundEnabled = true;
+      let activeEditingNoteId = null;
+      let splitActiveNoteId = null;
+      let lastDeletedNote = null;
+      let deleteTimeoutId = null;
+      let audioCtx = null;
+      let deferredPrompt = null;
+
+      // --- STORAGE HELPERS (SAFE LOCALSTORAGE) ---
+      
+      // --- FIREBASE FIRESTORE REAL-TIME CLOUD SYNC ENGINE ---
+      let firebaseApp = null;
+      let firestoreDb = null;
+      let syncDocUnsubscribe = null;
+      let isCloudSyncActive = false;
+      let cloudSyncStatus = 'local'; // 'local' | 'connecting' | 'synced' | 'error'
+      let cloudPushTimer = null;
+      let lastRemoteUpdateTimestamp = 0;
+      let isReceivingRemoteUpdate = false;
+
+      function updateSyncUI(status, label) {
+        cloudSyncStatus = status;
+        const headerDot = document.getElementById('headerSyncDot');
+        const headerText = document.getElementById('headerSyncText');
+        const modalDot = document.getElementById('syncModalStatusDot');
+        const modalBadge = document.getElementById('syncModalStatusBadge');
+        const feedback = document.getElementById('syncFeedbackText');
+
+        let dotColor = 'bg-zinc-600';
+        let badgeColor = 'text-zinc-400 border-zinc-800';
+
+        if (status === 'synced') {
+          dotColor = 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]';
+          badgeColor = 'text-emerald-400 border-emerald-500/40 bg-emerald-950/20';
+        } else if (status === 'connecting') {
+          dotColor = 'bg-amber-400 animate-pulse';
+          badgeColor = 'text-amber-400 border-amber-500/40 bg-amber-950/20';
+        } else if (status === 'error') {
+          dotColor = 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]';
+          badgeColor = 'text-rose-400 border-rose-500/40 bg-rose-950/20';
+        }
+
+        if (headerDot) headerDot.className = `w-2 h-2 rounded-full transition-colors ${dotColor}`;
+        if (headerText) headerText.textContent = label || (status === 'synced' ? 'Cloud Synced' : 'Local Only');
+
+        if (modalDot) modalDot.className = `w-2 h-2 rounded-full ${dotColor}`;
+        if (modalBadge) {
+          modalBadge.className = `text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border ${badgeColor}`;
+          modalBadge.textContent = label || (status === 'synced' ? 'Live Synced' : 'Offline / Local');
+        }
+      }
+
+      function parseFirebaseConfigInput(rawInput) {
+        if (!rawInput) return null;
+        rawInput = rawInput.trim();
+
+        // 1. Try clean JSON
+        try {
+          return JSON.parse(rawInput);
+        } catch (e) {}
+
+        // 2. Extract standard keys from JS code snippet
+        try {
+          const config = {};
+          const keys = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
+          keys.forEach(k => {
+            const regex = new RegExp(k + '\\s*:\\s*["\']([^"\']+)["\']');
+            const match = rawInput.match(regex);
+            if (match && match[1]) {
+              config[k] = match[1];
+            }
+          });
+          if (config.apiKey && config.projectId) {
+            return config;
+          }
+        } catch (e) {}
+
+        return null;
+      }
+
+      function getSyncDocRef(vaultId) {
+        if (!firestoreDb || !vaultId) return null;
+        const cleanVault = vaultId.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+        return firestoreDb.collection('vaultnotes').doc(cleanVault || 'default_vault');
+      }
+
+      function initCloudSync(savedConfig, vaultPassphrase, isManual = false) {
+        if (!savedConfig || !vaultPassphrase) {
+          updateSyncUI('local', 'Local Storage Only');
+          return;
+        }
+
+        if (typeof firebase === 'undefined') {
+          updateSyncUI('error', 'Firebase SDK Offline');
+          return;
+        }
+
+        try {
+          updateSyncUI('connecting', 'Connecting...');
+
+          // Unsubscribe previous listener if any
+          if (syncDocUnsubscribe) {
+            syncDocUnsubscribe();
+            syncDocUnsubscribe = null;
+          }
+
+          // Initialize or reuse Firebase App
+          if (!firebase.apps.length) {
+            firebaseApp = firebase.initializeApp(savedConfig);
+          } else {
+            firebaseApp = firebase.app();
+          }
+
+          firestoreDb = firebase.firestore();
+          const docRef = getSyncDocRef(vaultPassphrase);
+          if (!docRef) {
+            updateSyncUI('error', 'Invalid Vault Key');
+            return;
+          }
+
+          // Real-Time snapshot listener (WebSocket stream)
+          syncDocUnsubscribe = docRef.onSnapshot(
+            (snapshot) => {
+              isCloudSyncActive = true;
+              updateSyncUI('synced', 'Live Cloud Synced');
+
+              if (!snapshot.exists) {
+                // Initial cloud seed from current notes
+                pushNotesToCloudNow();
+                return;
+              }
+
+              const remoteData = snapshot.data();
+              if (remoteData && Array.isArray(remoteData.notes)) {
+                const remoteTs = remoteData.updatedAt || 0;
+                const localTs = parseInt(localStorage.getItem('notes_app_updated_at') || '0', 10);
+
+                // If remote is strictly newer or local has no notes
+                if (remoteTs > localTs || (notes.length === 0 && remoteData.notes.length > 0)) {
+                  isReceivingRemoteUpdate = true;
+                  lastRemoteUpdateTimestamp = remoteTs;
+                  notes = remoteData.notes;
+                  localStorage.setItem('notes_app_data', JSON.stringify(notes));
+                  localStorage.setItem('notes_app_updated_at', remoteTs.toString());
+                  renderNotes();
+                  isReceivingRemoteUpdate = false;
+                  showToast('Notes synchronized from cloud');
+                }
+              }
+            },
+            (err) => {
+              console.error('Firestore snapshot listener error:', err);
+              isCloudSyncActive = false;
+              updateSyncUI('error', 'Firestore Permission Denied');
+              const feedback = document.getElementById('syncFeedbackText');
+              if (feedback) feedback.textContent = 'Error: Check Firestore Security Rules (allow read, write: if true;)';
+            }
+          );
+
+          if (isManual) {
+            showToast('Connected to Cloud Sync!');
+          }
+        } catch (err) {
+          console.error('Firebase initialization error:', err);
+          updateSyncUI('error', 'Config Parse Error');
+        }
+      }
+
+      function pushNotesToCloudNow() {
+        if (!firestoreDb || !isCloudSyncActive) return;
+        const vaultId = localStorage.getItem('notes_app_sync_vault_id');
+        const docRef = getSyncDocRef(vaultId);
+        if (!docRef) return;
+
+        const timestamp = Date.now();
+        localStorage.setItem('notes_app_updated_at', timestamp.toString());
+
+        docRef.set({
+          notes: notes,
+          updatedAt: timestamp,
+          lastDevice: navigator.userAgent.slice(0, 50)
+        }, { merge: true })
+        .then(() => {
+          updateSyncUI('synced', 'Live Cloud Synced');
+        })
+        .catch((err) => {
+          console.error('Failed to push notes to cloud:', err);
+          updateSyncUI('error', 'Cloud Push Failed');
+        });
+      }
+
+      function queueCloudPush() {
+        if (!isCloudSyncActive || isReceivingRemoteUpdate) return;
+        clearTimeout(cloudPushTimer);
+        cloudPushTimer = setTimeout(() => {
+          pushNotesToCloudNow();
+        }, 500);
+      }
+
+      function loadStorage() {
+        try {
+          const storedNotes = localStorage.getItem('notes_app_data');
+          if (storedNotes) {
+            notes = JSON.parse(storedNotes);
+          } else {
+            notes = [...DEFAULT_NOTES];
+            saveNotes();
+          }
+
+          const storedPin = localStorage.getItem('notes_app_pin');
+          if (storedPin && storedPin.length === 4) {
+            pinCode = storedPin;
+          }
+
+          const storedLayout = localStorage.getItem('notes_app_layout');
+          if (storedLayout && ['keep-grid', 'clean-list', 'apple-notes'].includes(storedLayout)) {
+            activeLayout = storedLayout;
+          }
+
+          const storedSound = localStorage.getItem('notes_app_sound');
+          if (storedSound !== null) {
+            soundEnabled = (storedSound === 'true');
+          }
+        } catch (e) {
+          notes = [...DEFAULT_NOTES];
+        }
+      }
+
+      function saveNotes(shouldSyncToCloud = true) {
+        try {
+          localStorage.setItem('notes_app_data', JSON.stringify(notes));
+          localStorage.setItem('notes_app_updated_at', Date.now().toString());
+        } catch (e) {}
+        if (shouldSyncToCloud) {
+          queueCloudPush();
+        }
+      }
+
+      function savePreferences() {
+        try {
+          localStorage.setItem('notes_app_pin', pinCode);
+          localStorage.setItem('notes_app_layout', activeLayout);
+          localStorage.setItem('notes_app_sound', soundEnabled.toString());
+        } catch (e) {}
+      }
+
+      // --- SYNTHESIZED WEB AUDIO API HAPTICS ---
+      function getAudioContext() {
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            audioCtx = new AudioContextClass();
+          }
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        return audioCtx;
+      }
+
+      // Programmatic sine wave oscillator tick (140 Hz to 70 Hz exponential decay)
+      function playKeyTick() {
+        if (!soundEnabled) return;
+        try {
+          const ctx = getAudioContext();
+          if (!ctx) return;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          const now = ctx.currentTime;
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(140, now);
+          osc.frequency.exponentialRampToValueAtTime(70, now + 0.035);
+
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.04);
+        } catch (e) {}
+      }
+
+      // Two-tone chord (587.33 Hz D5 & 880 Hz A5) on successful unlock
+      function playSuccessChord() {
+        if (!soundEnabled) return;
+        try {
+          const ctx = getAudioContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+
+          const freqs = [587.33, 880.0];
+          freqs.forEach(freq => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.5);
+          });
+        } catch (e) {}
+      }
+
+      // Error buzz tone on wrong passcode
+      function playErrorBuzz() {
+        if (!soundEnabled) return;
+        try {
+          const ctx = getAudioContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(110, now);
+
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.28);
+        } catch (e) {}
+      }
+
+      // --- TOAST NOTIFICATIONS (NO BLOCKED ALERTS) ---
+      function showToast(message, actionText, actionCallback) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'pointer-events-auto flex items-center gap-3 px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700/80 text-xs text-white shadow-2xl transition-all duration-300 transform translate-y-2 opacity-0';
+
+        const textSpan = document.createElement('span');
+        textSpan.textContent = message;
+        toast.appendChild(textSpan);
+
+        if (actionText && actionCallback) {
+          const actionBtn = document.createElement('button');
+          actionBtn.type = 'button';
+          actionBtn.className = 'font-semibold text-emerald-400 hover:text-emerald-300 underline underline-offset-2 ml-1';
+          actionBtn.textContent = actionText;
+          actionBtn.addEventListener('click', () => {
+            actionCallback();
+            toast.remove();
+          });
+          toast.appendChild(actionBtn);
+        }
+
+        container.appendChild(toast);
+
+        // Animate in
+        requestAnimationFrame(() => {
+          toast.classList.remove('translate-y-2', 'opacity-0');
+        });
+
+        // Auto remove
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-2');
+          setTimeout(() => toast.remove(), 300);
+        }, 4000);
+      }
+
+      // --- DIGITAL CLOCK IN PHONE MOCKUP ---
+      function updatePhoneClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+
+        const statusTime = document.getElementById('lockStatusTime');
+        const bigClock = document.getElementById('lockBigClock');
+        const bigDate = document.getElementById('lockBigDate');
+
+        if (statusTime) statusTime.textContent = `${hours}:${minutes}`;
+        if (bigClock) bigClock.textContent = `${hours}:${minutes}:${seconds}`;
+
+        if (bigDate) {
+          const options = { weekday: 'long', month: 'long', day: 'numeric' };
+          bigDate.textContent = now.toLocaleDateString('en-US', options);
+        }
+      }
+      setInterval(updatePhoneClock, 1000);
+      updatePhoneClock();
+
+      // --- LOCK & UNLOCK MECHANISM ---
+      function setLockState(locked) {
+        isLocked = locked;
+        const overlay = document.getElementById('lockModalOverlay');
+        const mainContent = document.getElementById('appMainContent');
+
+        if (locked) {
+          overlay.classList.remove('hidden');
+          mainContent.classList.add('blur-md', 'pointer-events-none', 'select-none');
+          currentEnteredPin = '';
+          updatePinDots();
+        } else {
+          overlay.classList.add('hidden');
+          mainContent.classList.remove('blur-md', 'pointer-events-none', 'select-none');
+        }
+      }
+
+      function triggerSuccessfulUnlock() {
+        playSuccessChord();
+        const checkIcon = document.getElementById('fingerprintSuccessCheck');
+        const fpSvg = document.getElementById('fingerprintSvg');
+        const statusText = document.getElementById('sensorStatusText');
+        const padlock = document.getElementById('lockPadlockIcon');
+
+        if (checkIcon) checkIcon.classList.remove('hidden');
+        if (fpSvg) fpSvg.classList.add('hidden');
+        if (statusText) {
+          statusText.textContent = 'Authenticated. Unlocking...';
+          statusText.classList.add('text-emerald-400');
+        }
+        if (padlock) {
+          padlock.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>';
+        }
+
+        setTimeout(() => {
+          setLockState(false);
+          // Reset icon states for next lock
+          if (checkIcon) checkIcon.classList.add('hidden');
+          if (fpSvg) fpSvg.classList.remove('hidden');
+          if (statusText) {
+            statusText.textContent = 'Touch sensor or tap to authenticate';
+            statusText.classList.remove('text-emerald-400');
+          }
+          if (padlock) {
+            padlock.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>';
+          }
+          showToast('Workspace unlocked securely');
+        }, 500);
+      }
+
+      // Optical biometric scan simulation
+      let scanTimer = null;
+      function simulateBiometricScan() {
+        playKeyTick();
+        const statusText = document.getElementById('sensorStatusText');
+        if (statusText) statusText.textContent = 'Scanning optical pattern...';
+
+        clearTimeout(scanTimer);
+        scanTimer = setTimeout(() => {
+          triggerSuccessfulUnlock();
+        }, 650);
+      }
+
+      // Hardware Platform Biometrics WebAuthn fallback
+      async function tryHardwareWebAuthn() {
+        playKeyTick();
+        if (window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
+          try {
+            const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+            if (available && navigator.credentials && navigator.credentials.get) {
+              const challenge = new Uint8Array(32);
+              window.crypto.getRandomValues(challenge);
+              // Attempt biometric credential query
+              try {
+                await navigator.credentials.get({
+                  publicKey: {
+                    challenge: challenge,
+                    timeout: 60000,
+                    userVerification: 'preferred'
+                  }
+                });
+                triggerSuccessfulUnlock();
+                return;
+              } catch (authErr) {
+                // If user cancelled or mock failed, fallback to simulated optical scan
+                simulateBiometricScan();
+                return;
+              }
+            }
+          } catch (e) {}
+        }
+        // Fallback
+        simulateBiometricScan();
+      }
+
+      // Passcode Keypad logic
+      function updatePinDots() {
+        const dots = document.querySelectorAll('.pin-dot');
+        dots.forEach((dot, index) => {
+          if (index < currentEnteredPin.length) {
+            dot.classList.add('bg-white', 'border-white', 'scale-110');
+            dot.classList.remove('bg-transparent', 'border-zinc-700');
+          } else {
+            dot.classList.remove('bg-white', 'border-white', 'scale-110');
+            dot.classList.add('bg-transparent', 'border-zinc-700');
+          }
+        });
+      }
+
+      function handlePinDigit(digit) {
+        if (currentEnteredPin.length < 4) {
+          playKeyTick();
+          currentEnteredPin += digit;
+          updatePinDots();
+
+          if (currentEnteredPin.length === 4) {
+            // Validate PIN
+            if (currentEnteredPin === pinCode) {
+              triggerSuccessfulUnlock();
+            } else {
+              // Failed PIN
+              playErrorBuzz();
+              const pinRow = document.getElementById('pinDotsRow');
+              const helperText = document.getElementById('passcodeHelperText');
+              if (pinRow) {
+                pinRow.classList.add('shake-animation');
+                setTimeout(() => pinRow.classList.remove('shake-animation'), 450);
+              }
+              if (helperText) {
+                helperText.textContent = 'Incorrect passcode. Try again.';
+                helperText.classList.add('text-rose-400');
+                setTimeout(() => {
+                  helperText.innerHTML = `Default PIN: <span class="font-mono text-zinc-300">${pinCode}</span>`;
+                  helperText.classList.remove('text-rose-400');
+                }, 2000);
+              }
+              currentEnteredPin = '';
+              setTimeout(updatePinDots, 300);
+            }
+          }
+        }
+      }
+
+      function handlePinBackspace() {
+        if (currentEnteredPin.length > 0) {
+          playKeyTick();
+          currentEnteredPin = currentEnteredPin.slice(0, -1);
+          updatePinDots();
+        }
+      }
+
+      function handlePinClear() {
+        playKeyTick();
+        currentEnteredPin = '';
+        updatePinDots();
+      }
+
+      // Physical keyboard typing support on lock screen
+      window.addEventListener('keydown', (e) => {
+        if (!isLocked) return;
+        if (e.key >= '0' && e.key <= '9') {
+          handlePinDigit(e.key);
+        } else if (e.key === 'Backspace') {
+          handlePinBackspace();
+        } else if (e.key === 'Escape' || e.key === 'Delete') {
+          handlePinClear();
+        } else if (e.key === 'Enter') {
+          simulateBiometricScan();
+        }
+      });
+
+      // --- DATE & TIME FORMATTING ---
+      function formatRelativeTime(timestamp) {
+        const diff = Date.now() - timestamp;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        if (minutes < 1) return 'Just now';
+        if (minutes < 60) return `${minutes}m ago`;
+        if (hours < 24) return `${hours}h ago`;
+        if (days < 7) return `${days}d ago`;
+        return new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      }
+
+      // --- NOTE RENDERING & FILTERING ---
+      function getFilteredNotes() {
+        let list = [...notes];
+
+        // Search query
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase().trim();
+          list = list.filter(n => 
+            (n.title && n.title.toLowerCase().includes(q)) ||
+            (n.body && n.body.toLowerCase().includes(q)) ||
+            (n.tag && n.tag.toLowerCase().includes(q))
+          );
+        }
+
+        // Tag filter
+        if (activeFilterTag === 'pinned') {
+          list = list.filter(n => n.pinned);
+        } else if (activeFilterTag !== 'all') {
+          list = list.filter(n => n.tag && n.tag.toLowerCase() === activeFilterTag.toLowerCase());
+        }
+
+        // Sort: pinned first, then newest updated
+        list.sort((a, b) => {
+          if (a.pinned !== b.pinned) return b.pinned ? 1 : -1;
+          return b.updatedAt - a.updatedAt;
+        });
+
+        return list;
+      }
+
+      // HTML card generator for Keep Grid
+      function createGridCard(note) {
+        const card = document.createElement('div');
+        card.className = 'group relative bg-zinc-900 border border-zinc-800 hover:border-zinc-700/90 rounded-2xl p-4 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 flex flex-col justify-between cursor-pointer';
+        card.setAttribute('data-id', note.id);
+
+        const pinClass = note.pinned ? 'text-white' : 'text-zinc-600 hover:text-zinc-300';
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <h3 class="font-semibold text-sm text-zinc-100 group-hover:text-white line-clamp-2 leading-snug">${escapeHtml(note.title || 'Untitled Note')}</h3>
+              <button type="button" class="btn-card-pin p-1 rounded hover:bg-zinc-800 transition ${pinClass}" data-id="${note.id}" title="${note.pinned ? 'Unpin' : 'Pin'}">
+                <svg class="w-3.5 h-3.5" fill="${note.pinned ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                </svg>
+              </button>
+            </div>
+            <p class="text-xs text-zinc-400 group-hover:text-zinc-300 whitespace-pre-wrap line-clamp-5 leading-relaxed font-normal">${escapeHtml(note.body || '')}</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-zinc-850 flex items-center justify-between text-[11px] text-zinc-500">
+            <span class="px-2 py-0.5 rounded-md bg-zinc-950 border border-zinc-800 text-zinc-400 font-medium">${escapeHtml(note.tag || 'General')}</span>
+            <div class="flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition">
+              <span>${formatRelativeTime(note.updatedAt)}</span>
+              <button type="button" class="btn-card-delete p-1 rounded hover:text-rose-400 hover:bg-zinc-800 transition ml-1" data-id="${note.id}" title="Delete Note">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        `;
+        return card;
+      }
+
+      // HTML row generator for Clean List
+      function createListRow(note) {
+        const row = document.createElement('div');
+        row.className = 'group relative bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl p-3.5 transition-all duration-150 flex items-center justify-between gap-4 cursor-pointer';
+        row.setAttribute('data-id', note.id);
+
+        const pinClass = note.pinned ? 'text-white' : 'text-zinc-600 hover:text-zinc-300';
+
+        row.innerHTML = `
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <button type="button" class="btn-card-pin p-1 text-zinc-500 hover:text-white rounded hover:bg-zinc-800 shrink-0 ${pinClass}" data-id="${note.id}" title="${note.pinned ? 'Unpin' : 'Pin'}">
+              <svg class="w-4 h-4" fill="${note.pinned ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+              </svg>
+            </button>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2">
+                <h3 class="font-medium text-xs sm:text-sm text-zinc-100 group-hover:text-white truncate">${escapeHtml(note.title || 'Untitled Note')}</h3>
+                <span class="text-[10px] px-1.5 py-0.2 rounded bg-zinc-950 border border-zinc-800 text-zinc-400 shrink-0">${escapeHtml(note.tag || 'General')}</span>
+              </div>
+              <p class="text-xs text-zinc-500 group-hover:text-zinc-400 truncate mt-0.5">${escapeHtml(note.body ? note.body.replace(/\n/g, ' ') : '')}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0 text-xs text-zinc-500">
+            <span class="hidden sm:inline font-mono text-[11px]">${formatRelativeTime(note.updatedAt)}</span>
+            <div class="flex items-center gap-1">
+              <button type="button" class="btn-card-duplicate p-1.5 rounded hover:text-zinc-200 hover:bg-zinc-800 transition" data-id="${note.id}" title="Duplicate">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
+                </svg>
+              </button>
+              <button type="button" class="btn-card-delete p-1.5 rounded hover:text-rose-400 hover:bg-zinc-800 transition" data-id="${note.id}" title="Delete">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        `;
+        return row;
+      }
+
+      // Render Apple Notes Left Sidebar
+      function renderAppleNotesSidebar(filtered) {
+        const container = document.getElementById('splitSidebarNotes');
+        const badge = document.getElementById('splitNoteCountBadge');
+        if (!container) return;
+
+        if (badge) badge.textContent = filtered.length;
+        container.innerHTML = '';
+
+        if (filtered.length === 0) {
+          container.innerHTML = '<div class="p-6 text-center text-xs text-zinc-500">No matching notes</div>';
+          return;
+        }
+
+        // If splitActiveNoteId is not in filtered, choose first
+        if (!filtered.some(n => n.id === splitActiveNoteId)) {
+          splitActiveNoteId = filtered[0].id;
+        }
+
+        filtered.forEach(note => {
+          const item = document.createElement('div');
+          const isActive = (note.id === splitActiveNoteId);
+          item.className = `p-3 rounded-xl cursor-pointer transition-all ${isActive ? 'bg-zinc-900 border border-zinc-700/80 shadow-md' : 'hover:bg-zinc-900/50 border border-transparent'}`;
+          item.setAttribute('data-id', note.id);
+
+          item.innerHTML = `
+            <div class="flex items-center justify-between gap-1 mb-1">
+              <span class="font-medium text-xs text-zinc-100 truncate ${isActive ? 'text-white' : ''}">${escapeHtml(note.title || 'Untitled Note')}</span>
+              ${note.pinned ? '<svg class="w-3 h-3 text-zinc-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>' : ''}
+            </div>
+            <div class="flex items-center gap-2 text-[11px] text-zinc-500">
+              <span class="font-mono text-zinc-400 shrink-0">${formatRelativeTime(note.updatedAt)}</span>
+              <span class="truncate text-zinc-400">${escapeHtml(note.body ? note.body.replace(/\n/g, ' ') : 'No additional text')}</span>
+            </div>
+          `;
+
+          item.addEventListener('click', () => {
+            playKeyTick();
+            splitActiveNoteId = note.id;
+            renderAppleNotesSidebar(filtered);
+            bindSplitActiveEditor();
+          });
+
+          container.appendChild(item);
+        });
+      }
+
+      // Bind Active Note to Right Pane Editor in Apple Notes view
+      function bindSplitActiveEditor() {
+        const note = notes.find(n => n.id === splitActiveNoteId);
+        const titleInput = document.getElementById('splitEditorTitle');
+        const bodyInput = document.getElementById('splitEditorBody');
+        const tagSelect = document.getElementById('splitEditorTag');
+        const pinIcon = document.getElementById('splitEditorPinIcon');
+        const timestampSpan = document.getElementById('splitEditorTimestamp');
+        const wordCountSpan = document.getElementById('splitWordCount');
+        const mobilePreview = document.getElementById('splitMobileTitlePreview');
+
+        if (!note) {
+          if (titleInput) titleInput.value = '';
+          if (bodyInput) bodyInput.value = '';
+          if (mobilePreview) mobilePreview.textContent = 'No Note Selected';
+          return;
+        }
+
+        if (titleInput) titleInput.value = note.title || '';
+        if (bodyInput) bodyInput.value = note.body || '';
+        if (tagSelect) tagSelect.value = note.tag || 'General';
+        if (mobilePreview) mobilePreview.textContent = note.title || 'Untitled Note';
+        if (timestampSpan) timestampSpan.textContent = `Last updated: ${new Date(note.updatedAt).toLocaleString()}`;
+        
+        if (pinIcon) {
+          pinIcon.setAttribute('fill', note.pinned ? 'currentColor' : 'none');
+          pinIcon.classList.toggle('text-white', note.pinned);
+          pinIcon.classList.toggle('text-zinc-400', !note.pinned);
+        }
+
+        updateWordCount();
+      }
+
+      function updateWordCount() {
+        const bodyInput = document.getElementById('splitEditorBody');
+        const wordCountSpan = document.getElementById('splitWordCount');
+        if (!bodyInput || !wordCountSpan) return;
+
+        const text = bodyInput.value.trim();
+        const words = text ? text.split(/\s+/).length : 0;
+        wordCountSpan.textContent = `${words} word${words === 1 ? '' : 's'}`;
+      }
+
+      // Main Render Trigger
+      function renderNotes() {
+        const filtered = getFilteredNotes();
+        const emptyState = document.getElementById('emptyNotesState');
+
+        // Check empty state
+        if (filtered.length === 0) {
+          if (emptyState) emptyState.classList.remove('hidden');
+        } else {
+          if (emptyState) emptyState.classList.add('hidden');
+        }
+
+        // Render Keep Grid
+        const pinnedGrid = document.getElementById('pinnedGridNotes');
+        const otherGrid = document.getElementById('otherGridNotes');
+        const pinnedSection = document.getElementById('gridPinnedSection');
+        const othersLabel = document.getElementById('gridOthersLabel');
+
+        if (pinnedGrid && otherGrid) {
+          pinnedGrid.innerHTML = '';
+          otherGrid.innerHTML = '';
+
+          const pinnedNotes = filtered.filter(n => n.pinned);
+          const otherNotes = filtered.filter(n => !n.pinned);
+
+          if (pinnedNotes.length > 0 && activeFilterTag === 'all') {
+            if (pinnedSection) pinnedSection.classList.remove('hidden');
+            if (othersLabel) othersLabel.classList.remove('hidden');
+            pinnedNotes.forEach(n => pinnedGrid.appendChild(createGridCard(n)));
+          } else {
+            if (pinnedSection) pinnedSection.classList.add('hidden');
+            if (othersLabel) othersLabel.classList.add('hidden');
+          }
+
+          const targetList = (activeFilterTag === 'all' && pinnedNotes.length > 0) ? otherNotes : filtered;
+          targetList.forEach(n => otherGrid.appendChild(createGridCard(n)));
+        }
+
+        // Render Clean List
+        const cleanContainer = document.getElementById('cleanListContainer');
+        if (cleanContainer) {
+          cleanContainer.innerHTML = '';
+          filtered.forEach(n => cleanContainer.appendChild(createListRow(n)));
+        }
+
+        // Render Apple Notes
+        renderAppleNotesSidebar(filtered);
+        if (activeLayout === 'apple-notes') {
+          bindSplitActiveEditor();
+        }
+      }
+
+      // --- LAYOUT SWITCHING ---
+      function setLayout(layoutName) {
+        activeLayout = layoutName;
+        savePreferences();
+
+        const gridView = document.getElementById('layoutKeepGrid');
+        const listView = document.getElementById('layoutCleanList');
+        const splitView = document.getElementById('layoutAppleNotes');
+
+        const btnGrid = document.getElementById('viewBtnGrid');
+        const btnList = document.getElementById('viewBtnList');
+        const btnSplit = document.getElementById('viewBtnSplit');
+
+        // Reset toggles
+        [btnGrid, btnList, btnSplit].forEach(b => {
+          if (b) {
+            b.classList.remove('text-white', 'bg-zinc-800', 'shadow-sm');
+            b.classList.add('text-zinc-400');
+          }
+        });
+
+        // Hide all views
+        if (gridView) gridView.classList.add('hidden');
+        if (listView) listView.classList.add('hidden');
+        if (splitView) splitView.classList.add('hidden');
+
+        if (layoutName === 'keep-grid') {
+          if (gridView) gridView.classList.remove('hidden');
+          if (btnGrid) {
+            btnGrid.classList.add('text-white', 'bg-zinc-800', 'shadow-sm');
+            btnGrid.classList.remove('text-zinc-400');
+          }
+        } else if (layoutName === 'clean-list') {
+          if (listView) listView.classList.remove('hidden');
+          if (btnList) {
+            btnList.classList.add('text-white', 'bg-zinc-800', 'shadow-sm');
+            btnList.classList.remove('text-zinc-400');
+          }
+        } else if (layoutName === 'apple-notes') {
+          if (splitView) splitView.classList.remove('hidden');
+          if (btnSplit) {
+            btnSplit.classList.add('text-white', 'bg-zinc-800', 'shadow-sm');
+            btnSplit.classList.remove('text-zinc-400');
+          }
+          bindSplitActiveEditor();
+        }
+
+        renderNotes();
+      }
+
+      // --- CRUD ACTIONS ---
+      function createNote(title, body, tag = 'General', pinned = false) {
+        const newNote = {
+          id: 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+          title: title.trim(),
+          body: body.trim(),
+          tag: tag || 'General',
+          pinned: !!pinned,
+          updatedAt: Date.now()
+        };
+        notes.unshift(newNote);
+        saveNotes();
+        splitActiveNoteId = newNote.id;
+        renderNotes();
+        showToast('Note created successfully');
+        return newNote;
+      }
+
+      function updateNote(id, title, body, tag, pinned) {
+        const note = notes.find(n => n.id === id);
+        if (!note) return;
+
+        note.title = title.trim();
+        note.body = body.trim();
+        if (tag !== undefined) note.tag = tag;
+        if (pinned !== undefined) note.pinned = pinned;
+        note.updatedAt = Date.now();
+
+        saveNotes();
+        renderNotes();
+      }
+
+      function togglePinNote(id) {
+        playKeyTick();
+        const note = notes.find(n => n.id === id);
+        if (!note) return;
+        note.pinned = !note.pinned;
+        note.updatedAt = Date.now();
+        saveNotes();
+        renderNotes();
+        showToast(note.pinned ? 'Note pinned to top' : 'Note unpinned');
+      }
+
+      function duplicateNote(id) {
+        playKeyTick();
+        const original = notes.find(n => n.id === id);
+        if (!original) return;
+        const copy = {
+          ...original,
+          id: 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+          title: original.title ? `${original.title} (Copy)` : 'Untitled Note (Copy)',
+          updatedAt: Date.now()
+        };
+        notes.unshift(copy);
+        saveNotes();
+        renderNotes();
+        showToast('Note duplicated');
+      }
+
+      function deleteNote(id) {
+        playKeyTick();
+        const index = notes.findIndex(n => n.id === id);
+        if (index === -1) return;
+
+        lastDeletedNote = { note: notes[index], index };
+        notes.splice(index, 1);
+        saveNotes();
+
+        if (splitActiveNoteId === id) {
+          splitActiveNoteId = notes.length > 0 ? notes[0].id : null;
+        }
+
+        renderNotes();
+
+        // Toast with Undo action
+        showToast('Note deleted', 'Undo', () => {
+          if (lastDeletedNote) {
+            notes.splice(lastDeletedNote.index, 0, lastDeletedNote.note);
+            saveNotes();
+            renderNotes();
+            showToast('Note restored');
+            lastDeletedNote = null;
+          }
+        });
+      }
+
+      function exportNoteAsMarkdown(note) {
+        playKeyTick();
+        if (!note) return;
+        const content = `# ${note.title || 'Untitled Note'}
+
+*Tag: ${note.tag || 'General'} | Updated: ${new Date(note.updatedAt).toLocaleString()}*
+
+${note.body || ''}
+`;
+        const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const safeTitle = (note.title || 'note').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        a.download = `${safeTitle}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Downloaded Markdown file');
+      }
+
+      function exportAllNotesJson() {
+        playKeyTick();
+        const exportObj = {
+          app: 'Notes Pitch Black',
+          version: '2.0.0',
+          exportedAt: new Date().toISOString(),
+          notes: notes
+        };
+        const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `notes-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Exported JSON backup file');
+      }
+
+      function importNotesJson(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(e.target.result);
+            if (data && Array.isArray(data.notes)) {
+              notes = data.notes;
+              saveNotes();
+              renderNotes();
+              showToast(`Imported ${data.notes.length} notes successfully`);
+            } else if (Array.isArray(data)) {
+              notes = data;
+              saveNotes();
+              renderNotes();
+              showToast(`Imported ${data.length} notes successfully`);
+            } else {
+              showToast('Invalid JSON file format');
+            }
+          } catch (err) {
+            showToast('Failed to parse JSON file');
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      // --- EDIT MODAL (FOR GRID & LIST CLICKS) ---
+      function openEditModal(noteId) {
+        playKeyTick();
+        const note = notes.find(n => n.id === noteId);
+        if (!note) return;
+
+        activeEditingNoteId = note.id;
+        const modal = document.getElementById('editNoteModal');
+        const titleInput = document.getElementById('modalTitleInput');
+        const bodyInput = document.getElementById('modalBodyInput');
+        const tagSelect = document.getElementById('modalTagSelect');
+        const timestampSpan = document.getElementById('modalTimestamp');
+        const pinIcon = document.getElementById('modalPinIcon');
+        const charCount = document.getElementById('modalCharCount');
+
+        if (titleInput) titleInput.value = note.title || '';
+        if (bodyInput) bodyInput.value = note.body || '';
+        if (tagSelect) tagSelect.value = note.tag || 'General';
+        if (timestampSpan) timestampSpan.textContent = `Edited ${formatRelativeTime(note.updatedAt)}`;
+        if (charCount) charCount.textContent = `${(note.body || '').length} chars`;
+
+        if (pinIcon) {
+          pinIcon.setAttribute('fill', note.pinned ? 'currentColor' : 'none');
+          pinIcon.classList.toggle('text-white', note.pinned);
+          pinIcon.classList.toggle('text-zinc-400', !note.pinned);
+        }
+
+        if (modal) modal.classList.remove('hidden');
+      }
+
+      function closeEditModal() {
+        const modal = document.getElementById('editNoteModal');
+        if (modal) modal.classList.add('hidden');
+        activeEditingNoteId = null;
+      }
+
+      function saveEditModal() {
+        playKeyTick();
+        if (!activeEditingNoteId) return;
+        const note = notes.find(n => n.id === activeEditingNoteId);
+        if (!note) return;
+
+        const titleInput = document.getElementById('modalTitleInput');
+        const bodyInput = document.getElementById('modalBodyInput');
+        const tagSelect = document.getElementById('modalTagSelect');
+
+        updateNote(
+          activeEditingNoteId,
+          titleInput ? titleInput.value : '',
+          bodyInput ? bodyInput.value : '',
+          tagSelect ? tagSelect.value : 'General',
+          note.pinned
+        );
+
+        closeEditModal();
+        showToast('Changes saved');
+      }
+
+      // --- UTILITY: HTML ESCAPING ---
+      function escapeHtml(str) {
+        if (!str) return '';
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      // --- EVENT DELEGATION & WIRED LISTENERS ---
+      document.addEventListener('DOMContentLoaded', () => {
+        loadStorage();
+
+        // 1. Initial lock screen view
+        setLockState(true);
+
+        // 2. View switch buttons
+        const btnGrid = document.getElementById('viewBtnGrid');
+        const btnList = document.getElementById('viewBtnList');
+        const btnSplit = document.getElementById('viewBtnSplit');
+
+        if (btnGrid) btnGrid.addEventListener('click', () => { playKeyTick(); setLayout('keep-grid'); });
+        if (btnList) btnList.addEventListener('click', () => { playKeyTick(); setLayout('clean-list'); });
+        if (btnSplit) btnSplit.addEventListener('click', () => { playKeyTick(); setLayout('apple-notes'); });
+
+        // 3. Audio Mute button
+        const toggleAudioBtn = document.getElementById('toggleAudioBtn');
+        const iconAudioOn = document.getElementById('iconAudioOn');
+        const iconAudioOff = document.getElementById('iconAudioOff');
+
+        function updateAudioButtonUI() {
+          if (iconAudioOn && iconAudioOff) {
+            if (soundEnabled) {
+              iconAudioOn.classList.remove('hidden');
+              iconAudioOff.classList.add('hidden');
+            } else {
+              iconAudioOn.classList.add('hidden');
+              iconAudioOff.classList.remove('hidden');
+            }
+          }
+        }
+        updateAudioButtonUI();
+
+        if (toggleAudioBtn) {
+          toggleAudioBtn.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            savePreferences();
+            updateAudioButtonUI();
+            if (soundEnabled) playKeyTick();
+            showToast(soundEnabled ? 'Synthesized audio enabled' : 'Synthesized audio muted');
+          });
+        }
+
+        // 4. Lock button in header
+        const lockAppBtn = document.getElementById('lockAppBtn');
+        if (lockAppBtn) {
+          lockAppBtn.addEventListener('click', () => {
+            playKeyTick();
+            setLockState(true);
+          });
+        }
+
+        // 5. Lock screen tabs (Biometric vs Passcode)
+        const tabBio = document.getElementById('lockTabBiometric');
+        const tabPass = document.getElementById('lockTabPasscode');
+        const paneBio = document.getElementById('paneBiometric');
+        const panePass = document.getElementById('panePasscode');
+
+        if (tabBio && tabPass) {
+          tabBio.addEventListener('click', () => {
+            playKeyTick();
+            tabBio.classList.add('text-white', 'bg-zinc-800');
+            tabBio.classList.remove('text-zinc-400');
+            tabPass.classList.remove('text-white', 'bg-zinc-800');
+            tabPass.classList.add('text-zinc-400');
+
+            if (paneBio) paneBio.classList.remove('hidden');
+            if (panePass) panePass.classList.add('hidden');
+          });
+
+          tabPass.addEventListener('click', () => {
+            playKeyTick();
+            tabPass.classList.add('text-white', 'bg-zinc-800');
+            tabPass.classList.remove('text-zinc-400');
+            tabBio.classList.remove('text-white', 'bg-zinc-800');
+            tabBio.classList.add('text-zinc-400');
+
+            if (panePass) panePass.classList.remove('hidden');
+            if (paneBio) paneBio.classList.add('hidden');
+          });
+        }
+
+        // 6. Optical Scanner Sensor Button
+        const sensorBtn = document.getElementById('fingerprintSensorBtn');
+        if (sensorBtn) {
+          sensorBtn.addEventListener('click', () => {
+            simulateBiometricScan();
+          });
+        }
+
+        // 7. WebAuthn Hardware Biometrics Button
+        const hwBioBtn = document.getElementById('btnHardwareBiometrics');
+        if (hwBioBtn) {
+          hwBioBtn.addEventListener('click', () => {
+            tryHardwareWebAuthn();
+          });
+        }
+
+        // 8. On-Screen Numeric Keypad
+        const numKeys = document.querySelectorAll('.num-key');
+        numKeys.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const digit = btn.getAttribute('data-val');
+            if (digit !== null) handlePinDigit(digit);
+          });
+        });
+
+        const clearKey = document.querySelector('.num-key-clear');
+        if (clearKey) clearKey.addEventListener('click', handlePinClear);
+
+        const backKey = document.querySelector('.num-key-backspace');
+        if (backKey) backKey.addEventListener('click', handlePinBackspace);
+
+        // 9. Search Bar & Clear Search
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            if (clearSearchBtn) {
+              clearSearchBtn.classList.toggle('hidden', !searchQuery);
+            }
+            renderNotes();
+          });
+        }
+
+        if (clearSearchBtn) {
+          clearSearchBtn.addEventListener('click', () => {
+            searchQuery = '';
+            if (searchInput) searchInput.value = '';
+            clearSearchBtn.classList.add('hidden');
+            renderNotes();
+          });
+        }
+
+        // 10. Tag filter chips
+        const tagChips = document.querySelectorAll('.tag-filter-chip');
+        tagChips.forEach(chip => {
+          chip.addEventListener('click', () => {
+            playKeyTick();
+            activeFilterTag = chip.getAttribute('data-tag') || 'all';
+
+            tagChips.forEach(c => {
+              c.classList.remove('bg-zinc-800', 'border-zinc-700', 'text-white');
+              c.classList.add('bg-zinc-900', 'border-zinc-800', 'text-zinc-400');
+            });
+            chip.classList.remove('bg-zinc-900', 'border-zinc-800', 'text-zinc-400');
+            chip.classList.add('bg-zinc-800', 'border-zinc-700', 'text-white');
+
+            renderNotes();
+          });
+        });
+
+        // 11. Quick Composer Expand & Collapse
+        const composerCollapsed = document.getElementById('composerCollapsed');
+        const composerForm = document.getElementById('composerExpandedForm');
+        const composerCancelBtn = document.getElementById('composerCancelBtn');
+        const composerTitle = document.getElementById('composerTitle');
+        const composerBody = document.getElementById('composerBody');
+        const composerPinBtn = document.getElementById('composerPinBtn');
+        const composerPinIcon = document.getElementById('composerPinIcon');
+        let composerIsPinned = false;
+
+        function expandComposer() {
+          if (composerCollapsed && composerForm) {
+            composerCollapsed.classList.add('hidden');
+            composerForm.classList.remove('hidden');
+            if (composerTitle) composerTitle.focus();
+          }
+        }
+
+        function collapseComposer() {
+          if (composerCollapsed && composerForm) {
+            composerForm.classList.add('hidden');
+            composerCollapsed.classList.remove('hidden');
+            if (composerTitle) composerTitle.value = '';
+            if (composerBody) composerBody.value = '';
+            composerIsPinned = false;
+            if (composerPinIcon) composerPinIcon.setAttribute('fill', 'none');
+          }
+        }
+
+        if (composerCollapsed) {
+          composerCollapsed.addEventListener('click', () => {
+            playKeyTick();
+            expandComposer();
+          });
+        }
+
+        const quickPin = document.getElementById('quickPinToggle');
+        if (quickPin) {
+          quickPin.addEventListener('click', (e) => {
+            e.stopPropagation();
+            composerIsPinned = true;
+            if (composerPinIcon) composerPinIcon.setAttribute('fill', 'currentColor');
+            expandComposer();
+          });
+        }
+
+        if (composerCancelBtn) {
+          composerCancelBtn.addEventListener('click', () => {
+            playKeyTick();
+            collapseComposer();
+          });
+        }
+
+        if (composerPinBtn) {
+          composerPinBtn.addEventListener('click', () => {
+            playKeyTick();
+            composerIsPinned = !composerIsPinned;
+            if (composerPinIcon) {
+              composerPinIcon.setAttribute('fill', composerIsPinned ? 'currentColor' : 'none');
+            }
+          });
+        }
+
+        if (composerForm) {
+          composerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            playKeyTick();
+            const title = composerTitle ? composerTitle.value : '';
+            const body = composerBody ? composerBody.value : '';
+            const tagSelect = document.getElementById('composerTag');
+            const tag = tagSelect ? tagSelect.value : 'General';
+
+            if (!title.trim() && !body.trim()) {
+              collapseComposer();
+              return;
+            }
+
+            createNote(title, body, tag, composerIsPinned);
+            collapseComposer();
+          });
+        }
+
+        // Global shortcut Cmd/Ctrl + N to focus composer
+        window.addEventListener('keydown', (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'n') {
+            e.preventDefault();
+            if (!isLocked) {
+              expandComposer();
+            }
+          }
+        });
+
+        // 12. Grid & List Card Click delegation (Edit modal or card actions)
+        const viewsContainer = document.getElementById('viewsContainer');
+        if (viewsContainer) {
+          viewsContainer.addEventListener('click', (e) => {
+            // Pin button inside card
+            const pinBtn = e.target.closest('.btn-card-pin');
+            if (pinBtn) {
+              e.stopPropagation();
+              const id = pinBtn.getAttribute('data-id');
+              if (id) togglePinNote(id);
+              return;
+            }
+
+            // Delete button inside card
+            const deleteBtn = e.target.closest('.btn-card-delete');
+            if (deleteBtn) {
+              e.stopPropagation();
+              const id = deleteBtn.getAttribute('data-id');
+              if (id) deleteNote(id);
+              return;
+            }
+
+            // Duplicate button inside list row
+            const dupBtn = e.target.closest('.btn-card-duplicate');
+            if (dupBtn) {
+              e.stopPropagation();
+              const id = dupBtn.getAttribute('data-id');
+              if (id) duplicateNote(id);
+              return;
+            }
+
+            // Click on card body opens Edit Modal (in Keep Grid or Clean List)
+            if (activeLayout === 'keep-grid' || activeLayout === 'clean-list') {
+              const card = e.target.closest('[data-id]');
+              if (card) {
+                const id = card.getAttribute('data-id');
+                if (id) openEditModal(id);
+              }
+            }
+          });
+        }
+
+        // 13. Edit Note Modal handlers
+        const modalCloseX = document.getElementById('modalCloseXBtn');
+        const modalSaveBtn = document.getElementById('modalSaveBtn');
+        const modalDeleteBtn = document.getElementById('modalDeleteBtn');
+        const modalDupBtn = document.getElementById('modalDuplicateBtn');
+        const modalExportBtn = document.getElementById('modalExportBtn');
+        const modalPinBtn = document.getElementById('modalPinBtn');
+        const modalBodyInput = document.getElementById('modalBodyInput');
+        const modalCharCount = document.getElementById('modalCharCount');
+
+        if (modalCloseX) modalCloseX.addEventListener('click', closeEditModal);
+        if (modalSaveBtn) modalSaveBtn.addEventListener('click', saveEditModal);
+
+        if (modalDeleteBtn) {
+          modalDeleteBtn.addEventListener('click', () => {
+            if (activeEditingNoteId) {
+              deleteNote(activeEditingNoteId);
+              closeEditModal();
+            }
+          });
+        }
+
+        if (modalDupBtn) {
+          modalDupBtn.addEventListener('click', () => {
+            if (activeEditingNoteId) {
+              duplicateNote(activeEditingNoteId);
+              closeEditModal();
+            }
+          });
+        }
+
+        if (modalExportBtn) {
+          modalExportBtn.addEventListener('click', () => {
+            if (activeEditingNoteId) {
+              const note = notes.find(n => n.id === activeEditingNoteId);
+              if (note) exportNoteAsMarkdown(note);
+            }
+          });
+        }
+
+        if (modalPinBtn) {
+          modalPinBtn.addEventListener('click', () => {
+            if (activeEditingNoteId) {
+              const note = notes.find(n => n.id === activeEditingNoteId);
+              if (note) {
+                note.pinned = !note.pinned;
+                const pinIcon = document.getElementById('modalPinIcon');
+                if (pinIcon) {
+                  pinIcon.setAttribute('fill', note.pinned ? 'currentColor' : 'none');
+                  pinIcon.classList.toggle('text-white', note.pinned);
+                  pinIcon.classList.toggle('text-zinc-400', !note.pinned);
+                }
+              }
+            }
+          });
+        }
+
+        if (modalBodyInput && modalCharCount) {
+          modalBodyInput.addEventListener('input', () => {
+            modalCharCount.textContent = `${modalBodyInput.value.length} chars`;
+          });
+        }
+
+        // 14. Apple Notes Split Pane Live Editor Binding
+        const splitTitleInput = document.getElementById('splitEditorTitle');
+        const splitBodyInput = document.getElementById('splitEditorBody');
+        const splitTagSelect = document.getElementById('splitEditorTag');
+        const splitPinBtn = document.getElementById('splitEditorPinBtn');
+        const splitExportBtn = document.getElementById('splitEditorExportBtn');
+        const splitDeleteBtn = document.getElementById('splitEditorDeleteBtn');
+        const splitNewNoteBtn = document.getElementById('splitNewNoteBtn');
+        const splitMobileBackBtn = document.getElementById('splitMobileBackBtn');
+
+        let autoSaveTimer = null;
+        function handleSplitTextChange() {
+          if (!splitActiveNoteId) return;
+          const note = notes.find(n => n.id === splitActiveNoteId);
+          if (!note) return;
+
+          note.title = splitTitleInput ? splitTitleInput.value : '';
+          note.body = splitBodyInput ? splitBodyInput.value : '';
+          note.updatedAt = Date.now();
+
+          updateWordCount();
+
+          const syncStatus = document.getElementById('splitSaveStatus');
+          if (syncStatus) {
+            syncStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span><span>Saving...</span>';
+          }
+
+          clearTimeout(autoSaveTimer);
+          autoSaveTimer = setTimeout(() => {
+            saveNotes();
+            renderAppleNotesSidebar(getFilteredNotes());
+            if (syncStatus) {
+              syncStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500/80"></span><span>Synced</span>';
+            }
+          }, 300);
+        }
+
+        if (splitTitleInput) splitTitleInput.addEventListener('input', handleSplitTextChange);
+        if (splitBodyInput) splitBodyInput.addEventListener('input', handleSplitTextChange);
+
+        if (splitTagSelect) {
+          splitTagSelect.addEventListener('change', () => {
+            if (!splitActiveNoteId) return;
+            const note = notes.find(n => n.id === splitActiveNoteId);
+            if (note) {
+              note.tag = splitTagSelect.value;
+              note.updatedAt = Date.now();
+              saveNotes();
+              renderAppleNotesSidebar(getFilteredNotes());
+            }
+          });
+        }
+
+        if (splitPinBtn) {
+          splitPinBtn.addEventListener('click', () => {
+            if (splitActiveNoteId) {
+              togglePinNote(splitActiveNoteId);
+              bindSplitActiveEditor();
+            }
+          });
+        }
+
+        if (splitExportBtn) {
+          splitExportBtn.addEventListener('click', () => {
+            if (splitActiveNoteId) {
+              const note = notes.find(n => n.id === splitActiveNoteId);
+              if (note) exportNoteAsMarkdown(note);
+            }
+          });
+        }
+
+        if (splitDeleteBtn) {
+          splitDeleteBtn.addEventListener('click', () => {
+            if (splitActiveNoteId) {
+              deleteNote(splitActiveNoteId);
+            }
+          });
+        }
+
+        if (splitNewNoteBtn) {
+          splitNewNoteBtn.addEventListener('click', () => {
+            playKeyTick();
+            const newN = createNote('New Note', '', 'General', false);
+            splitActiveNoteId = newN.id;
+            bindSplitActiveEditor();
+            if (splitTitleInput) splitTitleInput.focus();
+          });
+        }
+
+        if (splitMobileBackBtn) {
+          splitMobileBackBtn.addEventListener('click', () => {
+            playKeyTick();
+            const sidebar = document.getElementById('splitSidebar');
+            if (sidebar) sidebar.scrollIntoView({ behavior: 'smooth' });
+          });
+        }
+
+        // 15. Settings Modal handlers
+        const openSettingsBtn = document.getElementById('openSettingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const settingsCloseX = document.getElementById('settingsCloseXBtn');
+        const settingsDoneBtn = document.getElementById('settingsDoneBtn');
+        const btnSaveNewPin = document.getElementById('btnSaveNewPin');
+        const inputNewPin = document.getElementById('inputNewPin');
+        const pinFeedback = document.getElementById('pinChangeFeedback');
+        const btnToggleSound = document.getElementById('btnToggleSoundSetting');
+        const btnExportJson = document.getElementById('btnExportAllJson');
+        const btnImportTrigger = document.getElementById('btnImportJsonTrigger');
+        const fileImportJson = document.getElementById('fileInputImportJson');
+        const btnResetSample = document.getElementById('btnResetSampleData');
+
+        if (openSettingsBtn && settingsModal) {
+          openSettingsBtn.addEventListener('click', () => {
+            playKeyTick();
+            settingsModal.classList.remove('hidden');
+          });
+        }
+
+        function closeSettings() {
+          if (settingsModal) settingsModal.classList.add('hidden');
+        }
+        if (settingsCloseX) settingsCloseX.addEventListener('click', closeSettings);
+        if (settingsDoneBtn) settingsDoneBtn.addEventListener('click', closeSettings);
+
+        if (btnSaveNewPin && inputNewPin) {
+          btnSaveNewPin.addEventListener('click', () => {
+            playKeyTick();
+            const val = inputNewPin.value.trim();
+            if (/^\d{4}$/.test(val)) {
+              pinCode = val;
+              savePreferences();
+              inputNewPin.value = '';
+              if (pinFeedback) {
+                pinFeedback.textContent = 'Passcode updated successfully!';
+                pinFeedback.classList.add('text-emerald-400');
+                setTimeout(() => {
+                  pinFeedback.textContent = 'Current PIN is stored safely in your browser.';
+                  pinFeedback.classList.remove('text-emerald-400');
+                }, 2500);
+              }
+              showToast('Passcode updated');
+            } else {
+              if (pinFeedback) {
+                pinFeedback.textContent = 'Must be exactly 4 digits (0-9).';
+                pinFeedback.classList.add('text-rose-400');
+                setTimeout(() => {
+                  pinFeedback.textContent = 'Current PIN is stored safely in your browser.';
+                  pinFeedback.classList.remove('text-rose-400');
+                }, 2500);
+              }
+            }
+          });
+        }
+
+        if (btnToggleSound) {
+          btnToggleSound.textContent = soundEnabled ? 'Enabled' : 'Muted';
+          btnToggleSound.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            savePreferences();
+            btnToggleSound.textContent = soundEnabled ? 'Enabled' : 'Muted';
+            updateAudioButtonUI();
+            if (soundEnabled) playKeyTick();
+          });
+        }
+
+        if (btnExportJson) {
+          btnExportJson.addEventListener('click', exportAllNotesJson);
+        }
+
+        if (btnImportTrigger && fileImportJson) {
+          btnImportTrigger.addEventListener('click', () => fileImportJson.click());
+          fileImportJson.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+              importNotesJson(e.target.files[0]);
+              fileImportJson.value = '';
+            }
+          });
+        }
+
+        if (btnResetSample) {
+          btnResetSample.addEventListener('click', () => {
+            playKeyTick();
+            notes = [...DEFAULT_NOTES];
+            saveNotes();
+            renderNotes();
+            showToast('Sample data restored');
+          });
+        }
+
+        // 16. PWA Modal handlers
+        const openPwaBtn = document.getElementById('openPwaBtn');
+        const pwaModal = document.getElementById('pwaModal');
+        const pwaCloseX = document.getElementById('pwaCloseXBtn');
+        const pwaDoneBtn = document.getElementById('pwaDoneBtn');
+        const pwaTabIos = document.getElementById('pwaTabIos');
+        const pwaTabAndroid = document.getElementById('pwaTabAndroid');
+        const pwaPaneIos = document.getElementById('pwaPaneIos');
+        const pwaPaneAndroid = document.getElementById('pwaPaneAndroid');
+        const nativeInstallArea = document.getElementById('pwaNativeInstallArea');
+        const btnNativeInstall = document.getElementById('btnNativePwaInstall');
+
+        if (openPwaBtn && pwaModal) {
+          openPwaBtn.addEventListener('click', () => {
+            playKeyTick();
+            pwaModal.classList.remove('hidden');
+          });
+        }
+
+        function closePwa() {
+          if (pwaModal) pwaModal.classList.add('hidden');
+        }
+        if (pwaCloseX) pwaCloseX.addEventListener('click', closePwa);
+        if (pwaDoneBtn) pwaDoneBtn.addEventListener('click', closePwa);
+
+        if (pwaTabIos && pwaTabAndroid) {
+          pwaTabIos.addEventListener('click', () => {
+            playKeyTick();
+            pwaTabIos.classList.add('text-white', 'bg-zinc-850');
+            pwaTabIos.classList.remove('text-zinc-400');
+            pwaTabAndroid.classList.remove('text-white', 'bg-zinc-850');
+            pwaTabAndroid.classList.add('text-zinc-400');
+
+            if (pwaPaneIos) pwaPaneIos.classList.remove('hidden');
+            if (pwaPaneAndroid) pwaPaneAndroid.classList.add('hidden');
+          });
+
+          pwaTabAndroid.addEventListener('click', () => {
+            playKeyTick();
+            pwaTabAndroid.classList.add('text-white', 'bg-zinc-850');
+            pwaTabAndroid.classList.remove('text-zinc-400');
+            pwaTabIos.classList.remove('text-white', 'bg-zinc-850');
+            pwaTabIos.classList.add('text-zinc-400');
+
+            if (pwaPaneAndroid) pwaPaneAndroid.classList.remove('hidden');
+            if (pwaPaneIos) pwaPaneIos.classList.add('hidden');
+          });
+        }
+
+        // Catch PWA beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+          e.preventDefault();
+          deferredPrompt = e;
+          if (nativeInstallArea) nativeInstallArea.classList.remove('hidden');
+        });
+
+        if (btnNativeInstall) {
+          btnNativeInstall.addEventListener('click', async () => {
+            if (deferredPrompt) {
+              deferredPrompt.prompt();
+              const { outcome } = await deferredPrompt.userChoice;
+              if (outcome === 'accepted') {
+                showToast('Notes app installed!');
+              }
+              deferredPrompt = null;
+              if (nativeInstallArea) nativeInstallArea.classList.add('hidden');
+              closePwa();
+            }
+          });
+        }
+
+        // Initialize Layout and First Render
+        
+        // Header Sync Pill click opens Settings modal
+        const headerSyncBtn = document.getElementById('headerSyncBtn');
+        if (headerSyncBtn) {
+          headerSyncBtn.addEventListener('click', () => {
+            playKeyTick();
+            const sm = document.getElementById('settingsModal');
+            if (sm) sm.classList.remove('hidden');
+          });
+        }
+
+        // Initialize Cloud Sync inputs from storage
+        const inputSyncVaultId = document.getElementById('inputSyncVaultId');
+        const textareaFirebaseConfig = document.getElementById('textareaFirebaseConfig');
+        const btnConnectSync = document.getElementById('btnConnectSync');
+        const btnManualSyncNow = document.getElementById('btnManualSyncNow');
+        const btnDisconnectSync = document.getElementById('btnDisconnectSync');
+        const syncFeedbackText = document.getElementById('syncFeedbackText');
+
+        const savedVaultId = localStorage.getItem('notes_app_sync_vault_id') || '';
+        const savedRawConfig = localStorage.getItem('notes_app_firebase_config') || '';
+
+        if (inputSyncVaultId) inputSyncVaultId.value = savedVaultId;
+        if (textareaFirebaseConfig) textareaFirebaseConfig.value = savedRawConfig;
+
+        if (savedVaultId && savedRawConfig) {
+          const parsed = parseFirebaseConfigInput(savedRawConfig);
+          if (parsed) {
+            initCloudSync(parsed, savedVaultId, false);
+          }
+        }
+
+        if (btnConnectSync) {
+          btnConnectSync.addEventListener('click', () => {
+            playKeyTick();
+            const rawConfig = textareaFirebaseConfig ? textareaFirebaseConfig.value.trim() : '';
+            const vaultId = inputSyncVaultId ? inputSyncVaultId.value.trim() : '';
+
+            if (!vaultId) {
+              if (syncFeedbackText) {
+                syncFeedbackText.textContent = 'Please choose a secret Vault Passphrase.';
+                syncFeedbackText.className = 'text-[10px] text-rose-400 font-mono';
+              }
+              return;
+            }
+
+            const parsedConfig = parseFirebaseConfigInput(rawConfig);
+            if (!parsedConfig) {
+              if (syncFeedbackText) {
+                syncFeedbackText.textContent = 'Invalid Firebase Config format. Paste your config snippet.';
+                syncFeedbackText.className = 'text-[10px] text-rose-400 font-mono';
+              }
+              return;
+            }
+
+            localStorage.setItem('notes_app_sync_vault_id', vaultId);
+            localStorage.setItem('notes_app_firebase_config', rawConfig);
+
+            if (syncFeedbackText) {
+              syncFeedbackText.textContent = 'Saved! Connecting to Firestore...';
+              syncFeedbackText.className = 'text-[10px] text-emerald-400 font-mono';
+            }
+
+            initCloudSync(parsedConfig, vaultId, true);
+          });
+        }
+
+        if (btnManualSyncNow) {
+          btnManualSyncNow.addEventListener('click', () => {
+            playKeyTick();
+            if (isCloudSyncActive) {
+              pushNotesToCloudNow();
+              showToast('Syncing notes to cloud...');
+            } else {
+              showToast('Cloud sync is not connected');
+            }
+          });
+        }
+
+        if (btnDisconnectSync) {
+          btnDisconnectSync.addEventListener('click', () => {
+            playKeyTick();
+            if (syncDocUnsubscribe) {
+              syncDocUnsubscribe();
+              syncDocUnsubscribe = null;
+            }
+            isCloudSyncActive = false;
+            localStorage.removeItem('notes_app_sync_vault_id');
+            localStorage.removeItem('notes_app_firebase_config');
+            if (inputSyncVaultId) inputSyncVaultId.value = '';
+            if (textareaFirebaseConfig) textareaFirebaseConfig.value = '';
+            if (syncFeedbackText) {
+              syncFeedbackText.textContent = 'Disconnected. Notes remain safe in local browser.';
+              syncFeedbackText.className = 'text-[10px] text-zinc-400 font-mono';
+            }
+            updateSyncUI('local', 'Local Storage Only');
+            showToast('Cloud Sync disconnected');
+          });
+        }
+
+        setLayout(activeLayout);
+      });
+
+    })();
+  </script>
+</body>
+</html>
