@@ -1,0 +1,4 @@
+# Do not commit secrets, exported backups, or local test data
+.env
+*.backup.json
+indvault-encrypted-backup.json

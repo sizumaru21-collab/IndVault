@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#09090f">
+  <meta name="description" content="IndVault — an encrypted notes vault prototype.">
+  <title>IndVault — Secure Notes</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="./"><span class="brand-icon">◈</span> IndVault</a>
+    <span id="status" class="status">Local mode · not connected</span>
+  </header>
+  <main>
+    <section id="accountPanel" class="panel">
+      <p class="eyebrow">PRIVATE BY DESIGN</p>
+      <h1>Your notes. Encrypted before sync.</h1>
+      <p class="muted">Sign in to sync encrypted records. Your account password and vault password must be different.</p>
+      <label>Email <input id="email" type="email" autocomplete="username" placeholder="you@example.com"></label>
+      <label>Account password <input id="accountPassword" type="password" autocomplete="current-password" placeholder="Firebase account password"></label>
+      <div class="actions">
+        <button id="signIn">Sign in</button>
+        <button id="signUp" class="secondary">Create account</button>
+        <button id="signOut" class="secondary hidden">Sign out</button>
+      </div>
+      <p id="accountMessage" class="message" role="status"></p>
+      <hr>
+      <h2>Vault password</h2>
+      <p class="muted small">This password encrypts your notes locally. Firebase cannot reset it. If you lose it, encrypted notes may be unrecoverable.</p>
+      <label>Vault password <input id="vaultPassword" type="password" autocomplete="current-password" minlength="14" placeholder="Use a long, unique passphrase"></label>
+      <div class="actions">
+        <button id="unlock">Unlock / create vault</button>
+        <button id="lock" class="secondary">Lock vault</button>
+      </div>
+      <p id="vaultMessage" class="message" role="status"></p>
+    </section>
+
+    <section id="vaultPanel" class="panel hidden">
+      <div class="vault-heading">
+        <div><p class="eyebrow">ENCRYPTED WORKSPACE</p><h2>Your notes</h2></div>
+        <div class="actions"><button id="sync">Sync now</button><button id="newNote" class="secondary">+ New note</button></div>
+      </div>
+      <p class="muted small">Notes are encrypted before being saved. Cloud sync requires an authenticated account and a configured Firebase project.</p>
+      <div class="note-editor">
+        <input id="noteTitle" maxlength="160" placeholder="Note title">
+        <textarea id="noteBody" rows="8" maxlength="100000" placeholder="Write a note…"></textarea>
+        <div class="actions">
+          <button id="saveNote">Save encrypted note</button>
+          <button id="deleteNote" class="danger secondary">Delete selected</button>
+          <button id="exportBackup" class="secondary">Export encrypted backup</button>
+          <label class="file-button">Import encrypted backup<input id="importBackup" type="file" accept="application/json,.json"></label>
+        </div>
+      </div>
+      <h3>Saved notes</h3>
+      <div id="notesList" class="notes-list"></div>
+      <p id="vaultStatus" class="message" role="status"></p>
+    </section>
+
+    <section class="warning">
+      <strong>Prototype warning</strong>
+      <p>Do not store real passwords, recovery codes, payment details, or other high-risk secrets until the code, Firebase rules, recovery process, and deployed site have passed an independent security review. This starter is not certified or production-audited.</p>
+    </section>
+  </main>
+  <footer>IndVault · Security-first development · No “unbreakable” claims</footer>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

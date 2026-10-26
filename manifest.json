@@ -1,0 +1,11 @@
+{
+  "name": "IndVault \u2014 Secure Notes",
+  "short_name": "IndVault",
+  "description": "Encrypted notes vault prototype",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#09090f",
+  "theme_color": "#09090f",
+  "icons": []
+}

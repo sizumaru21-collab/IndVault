@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Vault metadata contains a random salt and schema version only.
+    match /users/{uid}/vault/{document=**} {
+      allow read, write: if isOwner(uid);
+    }
+
+    // Every note payload is ciphertext, but rules still enforce account isolation.
+    match /users/{uid}/notes/{noteId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly([
+          'id', 'iv', 'ciphertext', 'updatedAt', 'schemaVersion'
+        ])
+        && request.resource.data.id == noteId
+        && request.resource.data.iv is string
+        && request.resource.data.ciphertext is string
+        && request.resource.data.iv.size() <= 64
+        && request.resource.data.ciphertext.size() <= 200000
+        && request.resource.data.schemaVersion == 1;
+    }
+
+    // Deny everything not explicitly matched above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
