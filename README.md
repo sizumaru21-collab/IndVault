@@ -1,59 +1,53 @@
-# VAULTNOTES
+# IndVault
 
-A minimalist, pitch-black notes workspace built with HTML, CSS, and JavaScript.
+**A privacy-first notes and password vault — planned around end-to-end encryption.**
 
-> **Security notice:** This version is a local notes app with a PIN-gated interface. The PIN is **not encryption**. Notes are stored in browser `localStorage` and may be readable to someone with access to the browser profile or developer tools. Do not store passwords, recovery codes, financial details, or other highly sensitive information here.
+> **Project status:** The roadmap below describes the intended build and security-review process. It is not a claim that every security feature is already implemented or independently audited. Do not store real passwords, recovery codes, or financial details in the current version until the encryption and security work is complete and verified.
 
-## What this safety patch changes
+**Live site:** [IndVault on GitHub Pages](https://sizumaru21-collab.github.io/IndVault/)
 
-- Removes the fake fingerprint scan that previously unlocked the app without checking identity.
-- Prevents the Enter key from bypassing the PIN.
-- Removes the PIN reveal after a failed attempt.
-- Disables Firebase cloud writes because the previous implementation uploaded readable notes and treated a shared passphrase as if it were authentication.
-- Clears previously saved Firebase configuration and sync passphrase from this browser. **This does not delete notes already uploaded to a Firebase project.**
-- Updates app metadata and documents the real security limits.
+## Our roadmap
 
-## Files
+The project will be built in stages, with security checks throughout development and an independent-style review before public release.
 
-Keep these three files together in the repository root:
+![Handwritten IndVault development roadmap](assets/indvault-roadmap.png)
 
-- `index.html` — app interface and logic
-- `manifest.json` — installable-app metadata
-- `README.md` — project documentation
+*The image is a project plan. Actual implementation, testing, and security review must be completed before features are described as secure or production-ready.*
 
-## Deploy with GitHub Pages
+## Planned priorities
 
-1. Back up your current repository and export your notes as a JSON backup from the app before replacing files.
-2. Upload the three files above to the root of your GitHub repository, replacing the old versions.
-3. In GitHub, open **Settings → Pages**.
-4. Set **Build and deployment** to **Deploy from a branch**, choose your main branch and `/(root)`, then save.
-5. Open the Pages URL shown by GitHub. Use that exact URL; the repository name determines the path.
+- **End-to-end encryption:** Encrypt note contents on the device before saving or syncing them. The server should receive ciphertext, not readable notes or a usable decryption key.
+- **Encrypted local storage:** Store encrypted records locally; do not rely on a PIN screen as encryption.
+- **Cross-device sync:** Sign in on the website and Android app, then decrypt vault data locally using the user's secret.
+- **Safe recovery:** Design a recovery method before launch and explain clearly that lost secrets may mean lost data.
+- **Security hardening:** Enforce per-user database rules, protect against injection and cross-site scripting (XSS), auto-lock after inactivity, and avoid logging sensitive content.
+- **Android app:** Add native biometric unlock only after the core vault and sync are secure. Biometrics will be a local convenience, not a replacement for vault encryption.
+- **Independent-style review:** Review code, encryption/key handling, database rules, recovery, sync conflicts, and release configuration; fix and retest critical/high-severity findings before public release.
 
-## Local use and backups
+## Planned technology and hosting
 
-- Open `index.html` in a modern browser. Some browser features work more reliably when served from GitHub Pages or another HTTPS origin.
-- Notes are saved in the current browser profile. Clearing site data, changing browsers, or using a different device will not move notes automatically.
-- Use the app's JSON export regularly and keep a backup somewhere separate from this browser.
-- If the app already contains notes, export them **before** replacing the file. The code patch does not intentionally clear the `notes_app_data` notes key.
+- **Website:** HTML, CSS, and JavaScript hosted on GitHub Pages.
+- **Sync/authentication:** Firebase Authentication and Cloud Firestore, subject to current free-plan limits and correctly configured security rules.
+- **Android:** A later APK build with app-private encrypted storage and Android Keystore-backed local unlock.
 
-## Cloud sync status
+Free-tier availability and quotas can change. The project will avoid attaching a billing account to the Firebase project during the free-plan prototype, and sync must fail safely if quotas are reached. “Free forever” cannot be guaranteed.
 
-Cloud sync is intentionally disabled in this build. The previous approach uploaded note contents as readable Firestore data, used a passphrase only as a document identifier, and did not implement proper user authentication or end-to-end encryption. Do not re-enable it by adding permissive Firestore rules. A secure implementation needs authenticated users, restrictive Firestore Security Rules, encryption before upload, key recovery design, and conflict resolution.
+## Development principles
 
-## PWA / offline status
+1. Encryption before cloud sync.
+2. Never treat a PIN overlay or biometric animation as data protection.
+3. Never upload plaintext note content or the master password.
+4. Never silently overwrite conflicting edits during sync.
+5. Test with dummy data first; do not use real secrets until security checks are complete.
+6. Document known limitations honestly and do not claim the vault is “unbreakable.”
 
-`manifest.json` supplies installation metadata; it does **not** by itself make the app work offline. This project still loads Tailwind CSS and fonts from external CDNs, so full offline operation is not guaranteed. A service worker and locally bundled assets would be needed for a reliable offline-first PWA.
+## GitHub Pages setup
 
-## Tech stack
-
-- HTML5 and vanilla JavaScript
-- Tailwind CSS via CDN
-- Google Fonts (Inter and JetBrains Mono)
-- Browser `localStorage` for local persistence
-- Web Audio API for interface sounds
-
-This is not zero-dependency and the interface PIN should not be described as secure vault encryption.
+1. Keep `README.md` in the repository root.
+2. Upload the `assets/` folder with `assets/indvault-roadmap.png` inside it.
+3. Keep the website files (including `index.html` and `manifest.json`) in the repository root unless the deployment configuration says otherwise.
+4. In GitHub, open **Settings → Pages** and publish from the intended branch and folder.
 
 ## License
 
-Add a `LICENSE` file containing the full MIT License text if you intend to distribute this project under MIT. A README statement alone is not a substitute for the license file.
+Add a `LICENSE` file to the repository if you intend to distribute this project under a specific open-source license. Do not assume a license applies until that file is present.
